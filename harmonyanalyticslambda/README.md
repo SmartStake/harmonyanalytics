@@ -27,4 +27,4 @@ Template for haconfig.dev.json or haconfig.prod.json:
       "REGION": "us-east-1"
     }
 
-Note that the application will work only if the backend application, database, and data sync jobs are setup.
+Note that the application will work only if the database, and other AWS resources are setup properly.
