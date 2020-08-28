@@ -1,0 +1,11 @@
+{
+  "DB_SCHEMA_NAME": "<FILL_IT>",
+  "DB_ENDPOINT": "<FILL_IT>",
+  "H_TELEGRAM_TOKEN": "<FILL_IT>",
+  "DB_USERNAME": "<FILL_IT>",
+  "DB_PASSWORD": "<FILL_IT>",
+  "SECURITY_KEY_1": "<FILL_IT>",
+  "SECURITY_KEY_2": "<FILL_IT>",
+  "DEFAULT_POOL_ID": 42,
+  "REGION": "us-east-1"
+}

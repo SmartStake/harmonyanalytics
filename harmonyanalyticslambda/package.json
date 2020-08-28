@@ -1,0 +1,11 @@
+{
+  "name": "ha",
+  "description": "",
+  "version": "0.1.0",
+  "dependencies": {},
+  "devDependencies": {
+    "serverless": "^1.78.1",
+    "serverless-configuration": "^1.0.0",
+    "serverless-python-requirements": "^5.1.0"
+  }
+}

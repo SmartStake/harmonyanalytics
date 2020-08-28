@@ -1,0 +1,24 @@
+.moduleSection {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    border-radius: 1px;
+    width: 100%;
+}
+
+.imgicon {
+  vertical-align: text-top;
+  border: 1px solid grey;
+  border-radius: 4px;
+  padding: 1px;
+}
+
+.imgicon:hover {
+    cursor: pointer;
+    box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+}
+
+/* .divWithText {
+  padding-left: 0.2rem;
+  padding-right: 0.2rem;
+} */

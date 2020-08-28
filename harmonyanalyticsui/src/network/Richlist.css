@@ -1,0 +1,13 @@
+
+/* .react-bootstrap-table:hover {
+    cursor: pointer;
+} */
+
+.buttonWithText {
+  float: right;
+}
+
+.pWithText {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}

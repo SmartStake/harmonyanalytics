@@ -1,0 +1,20 @@
+{
+    "general": {
+        "key": "<security-key-for-backend-lambda>",
+        "app": "HARMONY",
+        "DEFAULT_POOL_ID": <DEFAULT_POOL_DB_ID>,
+        "ADDRESS_MIN_BALANCE_FOR_FOR_TOP_SYNC": 12000,
+        "ADDRESS_MAX_RANK_FOR_TOP_SYNC": 2000,
+        "MAX_LIMIT_EVENT_SYNC": 1000,
+        "EVENT_SYNC_MAX_LOOPS": 5,
+        "SLEEP_TIME_FOR_MORE": 0.05,
+        "BLOCK_TIME": 5
+    },
+    "paths": {
+        "HARMONY_HOME_RELATIVE_DIR": "/harmony/",
+        "appEnvDev": "<AWS_API_GATEWAY_ENDPOINT_FOR_DEV>",
+        "appEnvProd": "<AWS_API_GATEWAY_ENDPOINT_FOR_PROD>",
+        "ADDRESS_URL": "https://harmony-explorer-mainnet.firebaseio.com/one-holder.json",
+        "HARMONY_BASE_URL": "https://api.s0.t.hmny.io"
+    }
+}

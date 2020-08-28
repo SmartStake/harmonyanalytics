@@ -1,0 +1,192 @@
+/* .App {
+  text-align: center;
+} */
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 30px;
+}
+
+.table th{
+  padding:.25rem;
+}
+
+.table td{
+  padding:.25rem;
+}
+
+.App-header {
+  background-color: #222;
+  height: 70px;
+  padding: 3px;
+  color: white;
+  text-align: center;
+}
+
+.App {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+.white-a {
+  color: #FFF;
+  text-decoration: underline;
+}
+.white-a:hover {
+   color: #00F
+}
+
+.black-a {
+  color: #000;
+  text-decoration: underline;
+}
+
+.black-a:hover {
+   color: #00F
+}
+
+.regular-b-a {
+  color: #000;
+}
+
+.regular-b-a:hover {
+   color: #00F
+}
+
+.regular-w-a {
+  color: #FFF;
+}
+
+.regular-w-a:hover {
+   color: #00F
+}
+
+.headerWarning {
+  background-color: red;
+}
+
+.buttonWithText {
+  float: right;
+}
+
+.pWithText {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+body {
+  margin:0.2rem;
+  padding:0.2rem
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.divWithText {
+  padding-left: 0.2rem;
+  padding-right: 0.2rem;
+}
+
+.img-valign {
+  vertical-align: bottom;
+  margin-bottom: 0.1em;
+}
+
+/* .view-tag {
+  border-radius: 2px;
+  background-color: #black;
+  text-decoration: underline;
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+	margin-top: 5px;
+	margin-bottom: 5px;
+  margin-right: 7px;
+  padding: 1px;
+} */
+
+.view-tag {
+  background-color: #00ade8;
+  text-decoration: underline;
+  border-radius: 5px;
+  border: 1px solid #a5d24a;
+  color: #white;
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+	margin-top: 5px;
+	margin-bottom: 5px;
+  margin-right: 7px;
+  padding: 3px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+/* background:linear-gradient(rgba(105,250,189,0.5),transparent);
+background-color:#00AEE9; /*69FABD*/
+/* background:linear-gradient(rgba(250,0,0,0.5),transparent);
+background-color:orange /*this your primary color*/
+/* background-color: #758796; */
+
+.table-striped>tbody>tr:nth-child(odd)>td,
+.table-striped>tbody>tr:nth-child(odd)>th {
+  background-color: #f0fafe;
+}
+.table-striped>tbody>tr:nth-child(even)>td,
+ .table-striped>tbody>tr:nth-child(even)>th {
+   background-color: #ffffff;
+}
+
+.button-special {
+  background-color: #00ade8;
+  border-radius: 5px;
+  border: 1px;
+  color: #ffffff;
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+	margin-top: 1px;
+	margin-bottom: 1px;
+  margin-left: 1px;
+  margin-right: 1px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.button-special-large {
+  background-color: #00ade8;
+  border-radius: 5px;
+  border: 1px;
+  color: #ffffff;
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+	margin-top: 5px;
+	margin-bottom: 5px;
+  margin-left: 1px;
+  margin-right: 1px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 15px;
+  padding-left: 15px;
+}

@@ -1,0 +1,29 @@
+
+.react-bootstrap-table:hover {
+    cursor: pointer;
+}
+
+.buttonWithText {
+  float: right;
+}
+
+.pWithText {
+  padding-left: 0.2rem;
+  padding-right: 0.2rem;
+}
+
+/* wrapperClasses="table-responsive"
+.react-bootstrap-table table {
+  table-layout: auto;
+} */
+
+/* .table-striped>tbody>tr:nth-child(odd)>td,
+.table-striped>tbody>tr:nth-child(odd)>th {
+   background-color: red;
+ }
+
+ .table-striped>tbody>tr:nth-child(even)>td,
+ .table-striped>tbody>tr:nth-child(even)>th {
+   background-color: #ECEFF1;
+   color: white;
+ } */

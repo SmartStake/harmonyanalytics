@@ -1,0 +1,7 @@
+.divAbs {
+  height: 200;
+  width: 300;
+  position: absolute;
+  transition: all 1s ease-in;
+  z-index: 2;
+}
