@@ -6,4 +6,4 @@ Harmonly Analytics consists of three projects:
 - harmonyanalyticsui - Harmony Analytics web application. It is based on react framework. Configuration is required in the user interface project to connect the frontend to AWS Lambda (AWS API Gateway) backend. Configuration file is harmonyanalyticsui -> src -> config.js.
 - harmonyutils - Harmony Utils contains python utilities that are used for syncing up data from Harmony nodes/backend with Harmony Analytics backend. Configuration is required in the to connect the utilities to AWS Lambda (AWS API Gateway) backend. Configuration file is harmonyutils -> config.json.
 
-
+Setup instructions are given within each project.
