@@ -122,7 +122,7 @@ def getAmountFromTransactionReceipt(session, txHash):
 
 
 if len(sys.argv) < 2:
-	raise Exception("correct syntax is: python3.7 harmonyEventsSync dev/prod logsPath")
+	raise Exception("correct syntax is: python harmonyEventsSync dev/prod logsPath")
 
 startTime = int(time.time())
 processEvents()

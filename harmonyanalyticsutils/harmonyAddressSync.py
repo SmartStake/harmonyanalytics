@@ -94,6 +94,8 @@ def getBalance(session, address):
     balance = commonUtils.getHarmonyResultDataFromPost(session, constants.BALANCE_URL, [address])
     return commonUtils.divideByTenPower18(balance)
 
+if len(sys.argv) < 3:
+    raise Exception("correct syntax is: python harmonyAddressSync dev/prod logsPath TOP/ALL")
 
 logger.info("syncing all addresses")
 syncAllAddresses()

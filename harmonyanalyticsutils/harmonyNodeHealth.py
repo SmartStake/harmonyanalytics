@@ -74,6 +74,21 @@ def saveHealthCheck(blockDiff, networkHeight, nodeHeight, shardId):
     logger.debug(reqData)
     commonUtils.postReq(constants.saveHealthCheckUrl, reqData)
 
+# def postReq(url, reqData):
+#     data_json = jsondumps(reqData)
+#     logger.debug("after json dump")
+#     logger.debug(data_json)
+#     session = Session()
+#     logger.debug("calling save health check:")
+#     logger.debug(url)
+#     #response = session.post('https://dev.smartstakeapi.com/saveHealthCheck',
+#     #                        data=data_json, allow_redirects=False)
+#
+#     response = session.post(url,
+#                             data=data_json, allow_redirects=False)
+#     logger.debug("save health check response is:")
+#     logger.debug(response)
+
 
 def getNodeStatus():
     # ./hmy blockchain latest-header
@@ -112,8 +127,21 @@ def execCmd(args):
     return resp
 
 
+# def default(o):
+#     if type(o) is datetime.date or type(o) is datetime.datetime:
+#         return o.isoformat()
+#     if isinstance(o, float):
+#         return round(o, 8)
+#     if type(o) is decimal.Decimal:
+#         return str(o)
+#
+#
+# def jsondumps(o):
+#     # return json.dumps(o)
+#     return json.dumps(o, default=default)
+
 
 if len(sys.argv) < 4:
-    raise Exception("correct syntax is: python3.7 harmonyNodeHealth dev/prod logsPath nodeName shardId")
+    raise Exception("correct syntax is: python harmonyNodeHealth dev/prod logsPath nodeName shardId")
 
 check_health()

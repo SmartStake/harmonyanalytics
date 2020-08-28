@@ -12,7 +12,7 @@ logger = logUtil.l()
 mode = sys.argv[3]
 
 MODE_VAL="val"
-MODE_ADD="add"
+MODE_DEL="del"
 logger.info("mode: " + mode)
 
 
@@ -314,16 +314,16 @@ def getMapFromList(listData):
 
 
 if len(sys.argv) < 3:
-    raise Exception("correct syntax is: python3.7 harmonySync dev/prod logsPath val/add")
+    raise Exception("correct syntax is: python harmonySync dev/prod logsPath val/del")
 
 
 if mode == MODE_VAL:
     logger.info("syncing all validators")
     syncValidators()
     logger.info("after syncing all validators")
-elif mode == MODE_ADD:
+elif mode == MODE_DEL:
     logger.info("syncing all delegators")
     syncDelegations()
     logger.info("after syncing all delegators")
 else:
-    raise Exception("correct syntax is: python3.7 harmonySync dev/prod logsPath val/add")
+    raise Exception("correct syntax is: python3.7 harmonySync dev/prod logsPath val/del")

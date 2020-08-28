@@ -15,6 +15,6 @@
         "appEnvDev": "<AWS_API_GATEWAY_ENDPOINT_FOR_DEV>",
         "appEnvProd": "<AWS_API_GATEWAY_ENDPOINT_FOR_PROD>",
         "ADDRESS_URL": "https://harmony-explorer-mainnet.firebaseio.com/one-holder.json",
-        "HARMONY_BASE_URL": "https://api.s0.t.hmny.io"
+        "HARMONY_BASE_URL": "https://api0.s0.t.hmny.io"
     }
 }
