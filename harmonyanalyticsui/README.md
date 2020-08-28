@@ -1,4 +1,4 @@
-# Harmony Analytics
+# Harmony Analytics UI
 Harmony Analytics is a react based web application.
 
 To run the application in a local environment, do the following:
@@ -6,7 +6,7 @@ To run the application in a local environment, do the following:
 install npm
 install react
 clone this repository
-go to the repository folder
+go to the repository folder -> harmonyanalyticsui
 modify src -> config.js and setup AWS API Gateway URL and other settings as needed
 Run the command "npm install"
 Run the command "npm start"
