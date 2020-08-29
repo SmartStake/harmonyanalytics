@@ -8,7 +8,8 @@ Instructions for setting up the project in a local environment:
 - clone source code
 - configure aws in local environment
 - setup mysql database in aws
-- configure haconfig.dev.json and haconfig.prod.json
+- create database objects by running harmony-mysql-ddl.sql (root folder)
+- configure haconfig.dev.json and haconfig.prod.json (root folder/one level above lambda project)
 - deploy lambda functions using "serverless deploy --stage <stage-name>" where stage-name is dev or prod
 - note down the endpoints generated. you will need them in harmonyanalyticsui and harmonyanalyticsutils
 ````

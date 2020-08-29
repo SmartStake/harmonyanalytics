@@ -3,7 +3,6 @@ export default {
     APP_HARMONY: "HARMONY",
   },
 
-//Harmony
   apiGateway: {
     REGION: "<API_GATEWAY_REGION>",
     URL: '<ENTER_API_GATEWAY_URL>',
