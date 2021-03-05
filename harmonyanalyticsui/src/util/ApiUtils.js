@@ -2,6 +2,7 @@ import { API} from 'aws-amplify';
 import React from 'react';
 
 import config from '../config';
+import NetworkUtils from '../util/NetworkUtils';
 
 class ApiUtils extends React.Component {
   static errorMsg = "The website is not available to process your request at this time. Please contact website operator.";
@@ -15,8 +16,11 @@ class ApiUtils extends React.Component {
       if(!ApiUtils.checkAccess()) {
         return;
       }
-      // console.log("in api get data util method. calling get url: " + url);
-      data =  await API.get('stakingService', ApiUtils.addKey(url));
+
+      let endpoint = NetworkUtils.getEndpoint()
+      // console.log(endpoint, " - in api get data util method. calling get url: " + url);
+
+      data =  await API.get(endpoint, ApiUtils.addKey(url));
       if(!ApiUtils.processAccess(data)) {
         return null;
       }
@@ -37,7 +41,7 @@ class ApiUtils extends React.Component {
       }
 
       // console.log("in api post data util method. calling post url: " + url);
-      data = await API.post('stakingService', ApiUtils.addKey(url), {
+      data = await API.post(NetworkUtils.getEndpoint(), ApiUtils.addKey(url), {
         body: postDataObj
       });
 
@@ -56,8 +60,8 @@ class ApiUtils extends React.Component {
   static addKey(url) {
     let separator = (url.indexOf("?") != -1) ? "&" : "?";
     const token = Math.round(new Date().getTime() / 1000);
-    let finalUrl = url + separator + "key=" + config.apiGateway.KEY;
-    finalUrl += "&token=" + token + "&app=" + config.apiGateway.APP;
+    let finalUrl = url + separator + "key=" + config.constants.KEY;
+    finalUrl += "&token=" + token + "&app=" + config.constants.APP;
     // console.log("url is: ", finalUrl);
     return finalUrl;
   }

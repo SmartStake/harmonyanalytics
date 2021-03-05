@@ -2,8 +2,6 @@ import datetime
 import logging
 import sys
 
-import constants
-
 today = datetime.date.today()
 # print("Today's date:", today)
 

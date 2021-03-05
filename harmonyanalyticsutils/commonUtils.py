@@ -5,6 +5,7 @@ import decimal
 import json
 from binascii import unhexlify
 from json import encoder
+
 from dateutil import parser
 from requests import Session
 
@@ -58,7 +59,7 @@ def postReq(url, reqData):
 	# logger.info(reqData)
 	data = {"data": reqData}
 	data_json = jsondumps(data)
-	logger.info("after json dump")
+	# logger.info("after json dump")
 
 	session = Session()
 	logger.info("calling update API:")
@@ -68,6 +69,8 @@ def postReq(url, reqData):
 	logger.info("update data response is:")
 	logger.info(response)
 
+	if response.status_code != 200:
+		raise Exception("invalid response received: {} for url: {}".format(response.status_code, url))
 
 def getResultFromPost(session, method, params=[]):
 	data = getDataFromPost(session, method, params)
@@ -103,7 +106,7 @@ def getDataFromGet(session, url):
 
 	logger.debug(response)
 	logger.debug("unexpected response")
-	return None
+	raise Exception("unexpected response in: {}".format(url))
 
 
 def getDataFromPost(session, url, method, params=[]):
@@ -195,7 +198,7 @@ def toEpochTime(val):
 def postReqAsIs(url, reqData):
 	# logger.info(reqData)
 	data_json = jsondumps(reqData)
-	logger.info("after json dump")
+	# logger.info("after json dump")
 
 	session = Session()
 	logger.info("calling update cs node balance:")
@@ -239,9 +242,9 @@ def getStartBlockHeight(session, eventNameUrl):
 	logger.info(response)
 	if response.status_code == 200:
 		data = json.loads(response.content.decode('utf-8'))
-		logger.info(data)
+		# logger.info(data)
 		blockHeight = data["description"]
-		logger.info("last synced block height: " + blockHeight)
+		# logger.info("last synced block height: " + blockHeight)
 		return int(blockHeight) + 1
 
 	logger.debug(response)
@@ -257,6 +260,45 @@ def getHarmonyResultDataFromPost(session, method, params=[]):
 
 
 def getHarmonyDataFromPost(session, method, params=[]):
+	url = constants.HARMONY_BASE_URL
+	return getHarmonyDataFromPostAndUrl(session, method, url, params)
+
+
+def getHarmonyResultDataFromPostAndUrl(session, method, url, params=[]):
+	data = getHarmonyDataFromPostAndUrl(session, method, url, params)
+	if data and "result" in data:
+		return data["result"]
+
+	return None
+
+
+def getHarmonyDataFromPostByShard(session, shardId, method, params=[]):
+	# logger.info("in getHarmonyDataFromPostByShard: shardId: {}".format(shardId))
+
+	if shardId == 0:
+		url = constants.HARMONY_BASE_URL
+	elif shardId == 1:
+		url = constants.HARMONY_BASE_URL_S1
+	elif shardId == 2:
+		url = constants.HARMONY_BASE_URL_S2
+	elif shardId == 3:
+		url = constants.HARMONY_BASE_URL_S3
+	else:
+		raise Exception("Invalid shard id passed: {}".format(shardId))
+
+	return getHarmonyDataFromPostAndUrl(session, method, url, params)
+
+
+def getHarmonyResultDataFromPostByShard(session, shardId, method, params=[]):
+	data = getHarmonyDataFromPostByShard(session, shardId, method, params)
+	if data and "result" in data:
+		return data["result"]
+
+	return None
+
+
+
+def getHarmonyDataFromPostAndUrl(session, method, url, params=[]):
 	headers = {'accept': 'application/object',
 		'Content-Type': 'application/json'}
 
@@ -264,12 +306,9 @@ def getHarmonyDataFromPost(session, method, params=[]):
 		'params':params,
 		'jsonrpc':'2.0', 'id': 1}
 
-	url = constants.HARMONY_BASE_URL
-	# logger.info(url)
-
+	# logger.info(inputs)
 	response = session.post(url,
 		data=json.dumps(inputs), headers=headers, allow_redirects=False)
-
 	# logger.info(response)
 	# logger.info(response.status_code)
 
@@ -285,4 +324,35 @@ def getHarmonyDataFromPost(session, method, params=[]):
 
 def getAmount(inputVal):
 	return divideByTenPower18(inputVal)
+
+
+def getStatus(inputData):
+	logger.info(inputData)
+	if inputData == "currently elected":
+		return constants.H_STATUS_ELECTED
+	elif inputData == "eligible to be elected next epoch":
+		return constants.H_STATUS_ELIGIBLE
+	elif inputData == "not eligible to be elected next epoch":
+		return constants.H_STATUS_NOT_ELIGIBLE
+
+	return "Unknown"
+
+
+def getShardBlockHeightRange(eventNameUrl, maxBlocks, shardId):
+	session = Session()
+	startBlock = getStartBlockHeight(session, eventNameUrl + str(shardId))
+
+	blockData = getHarmonyDataFromPostByShard(session, shardId, constants.LATEST_BLOCK_URL, [])
+	latestBlockHeight = blockData["result"]
+	actualLatestBlock = latestBlockHeight
+
+	more = False
+	if latestBlockHeight - startBlock > maxBlocks:
+		latestBlockHeight = startBlock + maxBlocks
+		more = True
+
+	logger.info("startBlock: {}, actualLatestBlock: {}, latestBlockHeight: {}, more: {}".format(
+		startBlock, actualLatestBlock, latestBlockHeight, more))
+	return startBlock, latestBlockHeight, more
+
 

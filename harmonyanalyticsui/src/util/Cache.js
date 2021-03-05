@@ -18,6 +18,8 @@ class Cache extends React.Component {
         Cache.setCachedSessionData(category, response)
       });
 
+      // data = ApiUtils.get("listCodes?codeType=" + category);
+      // Cache.setCachedSessionData(category, data);
       console.log("returned data from backend is: ");
       console.log(data);
     }

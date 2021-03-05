@@ -37,10 +37,23 @@ def getAllPropsAsMap(conn, app):
 def getPropValue(conn, app, propName):
     return getProp(conn, app, propName)["value"]
 
+
+def getIntPropValue(conn, app, propName):
+    return int(getProp(conn, app, propName)["value"])
+
+
 def setPropValue(conn, app, propName, value):
     sql = "update " + tables.propertytable + " set value=%s  "
     sql += " where name=%s and app=%s "
     conn.cursor().execute(sql, (str(value), propName, app))
     conn.commit()
     
+def isTrue(conn, app, propName):
+    value = getPropValue(conn, app, propName)
+
+    if value == "True":
+        return True
+
+    return False
+
 

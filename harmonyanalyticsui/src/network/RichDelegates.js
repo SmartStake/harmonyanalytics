@@ -63,14 +63,14 @@ class RichDelegates extends React.Component {
     var columns;
     if (window.innerWidth < 600) {
       columns = [
-        {text: "Overall Rank",dataField: "rank", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(14)},
+        {text: "Overall Rank",dataField: "ranking", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(14)},
         {text: "Address",dataField: "address", formatter: HUtils.addressFormatterByLabel, sort: true, headerStyle: Utilities.width(24)},
         {text: "Validators",dataField: "validators", formatter: SPUtilities.csvFormatter, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(42)},
         {text: "Total Stake",dataField: "totalStake", formatter: SPUtilities.stakeFormatterRounded, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(20)},
       ];
     } else if (window.innerWidth < 1000) {
       columns = [
-        {text: "Overall Rank",dataField: "rank", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(8)},
+        {text: "Overall Rank",dataField: "ranking", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(8)},
         {text: "Address",dataField: "address", formatter: HUtils.addressFormatterByLabel, sort: true, headerStyle: Utilities.width(20)},
         {text: "Validators",dataField: "validators", formatter: SPUtilities.csvFormatter, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(35)},
         {text: "Total Stake",dataField: "totalStake", formatter: SPUtilities.stakeFormatterRounded, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
@@ -80,7 +80,7 @@ class RichDelegates extends React.Component {
     } else {
       columns = [
         {text: "#",dataField: "index", sort: true, headerStyle: Utilities.width(4)},
-        {text: "Overall Rank",dataField: "rank", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(5)},
+        {text: "Overall Rank",dataField: "ranking", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(5)},
         {text: "",dataField: "address", formatter: HUtils.addressFormatterByLabelShort, filter: textFilter({placeholder: "Address"}), sort: true, headerStyle: Utilities.width(15)},
         {text: "Validators Staked With",dataField: "validators", formatter: SPUtilities.csvFormatter, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(40)},
         {text: "Total Stake",dataField: "totalStake", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(8)},

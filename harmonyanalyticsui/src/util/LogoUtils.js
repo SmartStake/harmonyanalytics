@@ -19,11 +19,14 @@ class LogoUtils extends React.Component {
     return size;
   }
 
-  static logoFormatter(idAddress, website, large) {
-    if (!idAddress) return "";
+  static logoFormatter(address, website, large) {
+    if (!address) return "";
 
     let size = LogoUtils.getImageSize(large);
-    let imagePath = "/images/logo/" + idAddress + ".png";
+    // let imagePath = "https://github.com/harmony-one/validator-logos/blob/master/validators/" + address + ".jpg?raw=true";
+    let imagePath = "https://hmny-t.co/networks/mainnet/validators/" + address + "/avatar";
+
+    // /images/logo/
     // console.log(imagePath);
     // return (<object type="image/png" width={size} height={size} data={imagePath}>
     //   <img className="img-valign" width={size} height={size} src="images/logo/default.png" />
@@ -35,11 +38,24 @@ class LogoUtils extends React.Component {
   }
 
   static addDefaultSrc(ev){
-    ev.target.src = "/images/logo/default.png";
+    ev.target.src = "/images/default.png";
   }
 
   static formatLogo(cell, row) {
-    return LogoUtils.logoFormatter(row.idAddress, row.website, false);
+    return LogoUtils.logoFormatter(cell, row.website, false);
+  }
+
+  static formatLogoFlag(cell, row) {
+    if (!cell) return "";
+
+    if (row.hasLogo) {
+      return LogoUtils.logoFormatter(cell, row.website, false);
+    }
+
+
+    let size = LogoUtils.getImageSize(false);
+    return <img onError={this.addDefaultSrc} className="img-valign"
+      width={size} height={size} src="/images/default.png"/>
   }
 }
 

@@ -7,6 +7,8 @@ import SPUtilities from "../util/SPUtilities";
 import AddressHeader from './AddressHeader';
 import AddressInline from './AddressInline';
 
+// import RewardComparison from '../reports/RewardComparison';
+
 class Address extends React.Component {
   constructor(props) {
     super(props);

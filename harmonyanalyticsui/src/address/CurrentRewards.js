@@ -13,10 +13,13 @@ import Card from 'react-bootstrap/Card';
 import CardDeck from 'react-bootstrap/CardDeck';
 import Table from 'react-bootstrap/Table';
 
+import tooltips from "../tooltips";
+import BaseBarChart from "../reports/BaseBarChart";
 import ApiUtils from '../util/ApiUtils';
 import UINotes from '../util/UINotes';
 // import "./Rewards.css";
 import Utilities from "../util/Utilities";
+import LogoUtils from "../util/LogoUtils";
 import SPUtilities from "../util/SPUtilities";
 import SPCalc from "../util/SPCalc";
 import Views from "./Views";
@@ -47,8 +50,10 @@ class CurrentRewards extends React.Component {
   }
 
   render() {
-    let totalStake = SPCalc.getTotal(this.props.rewards, "stake", true);
-    let totalRewards = SPCalc.getTotal(this.props.rewards, "reward", true);
+    // let totalStake =
+    //  SPCalc.getTotal(this.props.rewards, "stake", true);
+    // let totalRewards = SPCalc.getTotal(this.props.rewards, "reward", true);
+    // let totals = {stake: totalStake, reward: totalRewards};
 
     const expandRow = {
       onlyOneExpanding: true,
@@ -66,12 +71,13 @@ class CurrentRewards extends React.Component {
       columns = [
         {text: "Validator", dataField: "name", formatter: HUtils.nameFormatter, sort: true,  headerStyle: Utilities.width(25)},
         {text: "Stake",dataField: "stake", formatter: SPUtilities.coinCountCellFormatter, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(20)},
-        {text: "% Stake (portfolio)",dataField: "stake", formatter: SPCalc.calcWeight, formatExtraData: totalStake, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(15)},
+        {text: "% Stake (portfolio)",dataField: "percentStake", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(15)},
         {text: "Rewards",dataField: "reward", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(20)},
-        {text: "% Rewards (portfolio)", dataField: "reward", formatter: SPCalc.calcWeight, formatExtraData: totalRewards, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(20)},
+        {text: "% Rewards (portfolio)", dataField: "percentReward", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(20)},
       ];
     } else {
       columns = [
+        {text: "",dataField: "validatorAddress", sort: true, formatter: LogoUtils.formatLogo, headerStyle: Utilities.width(3)},
         {text: "Validator", dataField: "name", formatter: HUtils.nameFormatter, sort: true,  headerStyle: Utilities.width(20)},
         {text: "Fee", dataField: "fee", sort: true, formatter: HUtils.getFee, formatExtraData: this.props.coinStat.currentEpoch, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
         {text: "Avg Net ER", dataField: "avgNetApr", sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
@@ -79,18 +85,27 @@ class CurrentRewards extends React.Component {
         {text: "Current Sign %", dataField: "currentEpochSignPer", formatter: HUtils.percentFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
         {text: "Val Total Stake", dataField: "totalStaked", formatter: HUtils.coinCountCellFormatter, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
         {text: "Stake",dataField: "stake", formatter: HUtils.coinCountCellFormatter, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
-        {text: "% Stake (portfolio)",dataField: "stake", formatter: SPCalc.calcWeight, formatExtraData: totalStake, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
+        {text: "% Stake (portfolio)",dataField: "percentStake", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
         {text: "Rewards",dataField: "reward", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
-        {text: "% Rewards (portfolio)",dataField: "reward", formatter: SPCalc.calcWeight, formatExtraData: totalRewards, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
+        {text: "% Rewards (portfolio)",dataField: "percentReward", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
+        {text: "Reward Ratio", dataField: "rewardRatio", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
       ];
     }
+    // {text: "% Stake (portfolio)",dataField: "stake", formatter: SPCalc.calcWeight, formatExtraData: totalStake, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
+    // {text: "Rewards",dataField: "reward", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
+    // {text: "% Rewards (portfolio)",dataField: "reward", formatter: SPCalc.calcWeight, formatExtraData: totalRewards, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
+    // {text: "Reward Ratio", dataField: "reward", formatter: HUtils.calcRewardRatio, formatExtraData: totals, sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
 
     return (<div>
       <BootstrapTable keyField='name' data={ this.props.rewards }
         columns={ columns } striped
         expandRow={ expandRow } expandableRow={ () => { return true; } }
         hover condensed noDataIndication="No results"/>
-      </div>);
+      <hr/>
+      <BaseBarChart title="Reward Ratio by Validator" xAxis="Validator" yAxis="Reward Ratio"
+        showVerticalLabel={true} valueAttr="rewardRatio" showTotalLabel={false} xAxisValueAttr="shortName"
+        data={this.props.rewards} desc={tooltips.address.rewardRatio} />
+    </div>);
   }
 
   showRowDetails(row) {
@@ -130,7 +145,7 @@ class CurrentRewards extends React.Component {
           </tr>
           <tr>
             <th align="left">% Stake (portfolio): </th>
-            <td align="left"> {SPCalc.calcWeight(row.stake, row, 0, totalStake)}</td>
+            <td align="left"> {row.percentStake}</td>
           </tr>
           <tr>
             <th align="left">Rewards: </th>
@@ -138,7 +153,11 @@ class CurrentRewards extends React.Component {
           </tr>
           <tr>
             <th align="left">% Rewards (portfolio): </th>
-            <td align="left"> {SPCalc.calcWeight(row.reward, row, 0, totalRewards)}</td>
+            <td align="left"> {row.percentReward}</td>
+          </tr>
+          <tr>
+            <th align="left">Rewards Ratio: </th>
+            <td align="left"> {row.rewardRatio}</td>
           </tr>
         </tbody>
       </Table>

@@ -1,19 +1,16 @@
 import datetime
-import decimal
 import json
-import logging
 import subprocess
 import sys
-import time
-from json import encoder
-
-from requests import Session
 
 import commonUtils
 import constants
 import logUtil
 
 logger = logUtil.l()
+
+if len(sys.argv) < 5:
+    raise Exception("correct syntax is: python harmonyNodeHealth dev/prod logsPath nodeName shardId")
 
 harmonyCmdPath = constants.HARMONY_HOME_DIR + 'hmy'
 harmonyNodeUrl = '--node=https://api.s{}.t.hmny.io'
@@ -93,10 +90,10 @@ def saveHealthCheck(blockDiff, networkHeight, nodeHeight, shardId):
 def getNodeStatus():
     # ./hmy blockchain latest-header
     nodeHeaderCmd = [harmonyCmdPath, 'blockchain', 'latest-header']
-    logger.info("obtaining nodeHeader: " + str(nodeHeaderCmd))
+    # logger.info("obtaining nodeHeader: " + str(nodeHeaderCmd))
     nodeHeader = execCmdJson(nodeHeaderCmd)
-    logger.info("nodeHeader: ")
-    logger.info(nodeHeader)
+    # logger.info("nodeHeader: ")
+    # logger.info(nodeHeader)
 
     # return nodeHeader["result"]["blockNumber"]
     return nodeHeader["result"]
@@ -105,10 +102,10 @@ def getNodeStatus():
 def getNetworkStatus():
     # ./hmy --node="https://api.s2.t.hmny.io" blockchain latest-headers
     networkHeaderCmd = [harmonyCmdPath, harmonyNodeUrl, 'blockchain', 'latest-headers']
-    logger.info("obtaining networkHeader: " + str(networkHeaderCmd))
+    # logger.info("obtaining networkHeader: " + str(networkHeaderCmd))
     networkHeader = execCmdJson(networkHeaderCmd)
-    logger.info("networkHeader: ")
-    logger.info(networkHeader)
+    # logger.info("networkHeader: ")
+    # logger.info(networkHeader)
 
     return networkHeader["result"]
 
@@ -120,7 +117,7 @@ def execCmdJson(args):
 def execCmd(args):
     out = subprocess.Popen(args,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    logger.info("calling communicate")
+    # logger.info("calling communicate")
     stdout,stderr = out.communicate()
     resp = stdout.decode().replace("\n", "")
 
@@ -140,8 +137,5 @@ def execCmd(args):
 #     # return json.dumps(o)
 #     return json.dumps(o, default=default)
 
-
-if len(sys.argv) < 4:
-    raise Exception("correct syntax is: python harmonyNodeHealth dev/prod logsPath nodeName shardId")
 
 check_health()

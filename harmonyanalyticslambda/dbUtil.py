@@ -7,6 +7,7 @@ from utilities import jsondumps, getResponse, getResponseWithStatus
 
 #rds settings
 rds_host  = rds_config.db_endpoint
+rds_port  = int(rds_config.db_port)
 name = rds_config.db_username
 password = rds_config.db_password
 db_name = rds_config.db_name
@@ -17,7 +18,7 @@ logger.setLevel(logging.INFO)
 
 def getConnection():
     try:
-        conn = pymysql.connect(rds_host, user=name, passwd=password, db=db_name, connect_timeout=5,
+        conn = pymysql.connect(rds_host, port=rds_port, user=name, passwd=password, db=db_name, connect_timeout=5,
                                charset='utf8mb4', use_unicode=True)
     except BaseException as error:
         logger.error(error)

@@ -1,6 +1,10 @@
 import datetime
+import json
 import logging
+import time
 from binascii import unhexlify
+
+from requests import Session
 
 import dbUtil
 import rds_config
@@ -33,7 +37,15 @@ def getEventLastUpdated(conn, eventName):
 
 
 def getEventDescription(conn, eventName):
-	return getEventDetails(conn, eventName)["description"]
+	eventDetails = getEventDetails(conn, eventName)
+	# logger.info("eventName: {}, details: {}".format(eventName, eventDetails))
+	return eventDetails["description"]
+
+
+def getEventDescriptionInt(conn, eventName):
+	desc = getEventDescription(conn, eventName)
+	# if none that means record is missing and let it fail here
+	return int(desc)
 
 
 def getNodeHealth(conn, poolId):
@@ -110,13 +122,16 @@ def getNotification(conn, app, poolId=None):
 
 
 def getCoinStat(conn, symbol):
-	return getSingleRecordNoJsonWithConn(getCoinStatSql(), conn, symbol)
+	sql = getCoinStatSql()
+	logger.info("getting coinstat: {}, data: {}".format(sql, symbol))
+	return getSingleRecordNoJsonWithConn(sql, conn, symbol)
 
 
 def getCoinStatSql():
-	sql = "select cs.* "
+	sql = "select cs.*, (UNIX_TIMESTAMP() - cs.epochTimestamp) as lastUpdatedGap "
 	sql += " from " + tables.coinstat + " cs "
 	sql += " where cs.symbol = %s"
+	# logger.info(sql)
 
 	return sql
 
@@ -262,8 +277,57 @@ def getSyncStatus(conn, app, syncType):
 	sql += " where app = %s "
 	sql += " and syncType = %s "
 
-	logger.info(sql)
+	# logger.info(sql)
 
 	return dbUtil.getSingleRecordNoJsonWithConn(sql, conn, (app, syncType))
 
+def getCurrentTime():
+	return int(round(time.time() * 1000))
 
+def logTimeDiff(startTime, message):
+	diff = int(round(time.time() * 1000)) - startTime
+	logger.info(message + ", time spent so far: {}".format(diff))
+
+
+def getMapFromList2Keys(data, keyAttribute1, keyAttribute2):
+	mapObj = {}
+
+	for item in data:
+		keyValue = str(item[keyAttribute1]) + "-" + str(item[keyAttribute2])
+		mapObj[keyValue] = item
+
+	return mapObj
+
+
+def getDataByUrl(url):
+	return getDataFromGet(Session(), url)
+
+
+def getDataFromGet(session, url):
+	# logger.debug("calling url: " + url)
+	headers = {'accept': 'application/object'}
+	response = session.get(url, headers=headers)
+
+	# logger.info(response)
+	if response.status_code == 200:
+		data = json.loads(response.content.decode('utf-8'))
+		# logger.info(data)
+		return data
+
+	logger.debug(response)
+	logger.debug("unexpected response")
+	return None
+
+
+def combineTwoListsToSet(chats1, chats2):
+	if chats1 is None or len(chats1) == 0:
+		return chats2
+
+	if chats2 is None or len(chats2) == 0:
+		return chats1
+
+	chats = set(chats1)
+	for chat in chats2:
+		chats.add(chat)
+
+	return chats

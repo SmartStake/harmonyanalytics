@@ -80,19 +80,19 @@ class FilterAddress extends Component {
     return (
       <Collapse isOpened={this.props.showFilter}>
         <Form onSubmit={this.filterData}>
-          <Form.Group as={Row} controlId="addressControlId">
-            <Form.Label column sm={4}>Enter $ONE Address(es): </Form.Label>
-            <Col sm={6}><Form.Control type="text"
+          <Form.Group controlId="addressControlId">
+            <Form.Label>Enter $ONE Address(es): </Form.Label>
+            <Form.Control type="text"
               placeholder="Enter $ONE address"
               onChange={this.onAddressSelect.bind(this)}
-              defaultValue={this.props.filterState.address} /></Col>
+              defaultValue={this.props.filterState.address} />
           </Form.Group>
-          <Form.Group as={Row} controlId="aliasControlId">
-            <Form.Label column sm={4}>Nickname/Alias (don't use real name): </Form.Label>
-            <Col sm={6}><Form.Control type="text"
+          <Form.Group controlId="aliasControlId">
+            <Form.Label>Nickname/Alias (don't use real name): </Form.Label>
+            <Form.Control type="text"
               placeholder="Enter nickname/alias (works across devices)"
               onChange={this.onAliasChange.bind(this)}
-              defaultValue={this.props.filterState.alias} /></Col>
+              defaultValue={this.props.filterState.alias} />
           </Form.Group>
           <FormGroup>
             <Button type="submit" variant="contained" color="primary" id="search"
@@ -105,6 +105,33 @@ class FilterAddress extends Component {
       </Collapse>
     );
   }
+/*
+<Collapse isOpened={this.props.showFilter}>
+  <Form onSubmit={this.filterData}>
+    <Form.Group as={Row} controlId="addressControlId">
+      <Form.Label column sm={4}>Enter $ONE Address(es): </Form.Label>
+      <Col sm={6}><Form.Control type="text"
+        placeholder="Enter $ONE address"
+        onChange={this.onAddressSelect.bind(this)}
+        defaultValue={this.props.filterState.address} /></Col>
+    </Form.Group>
+    <Form.Group as={Row} controlId="aliasControlId">
+      <Form.Label column sm={4}>Nickname/Alias (don't use real name): </Form.Label>
+      <Col sm={6}><Form.Control type="text"
+        placeholder="Enter nickname/alias (works across devices)"
+        onChange={this.onAliasChange.bind(this)}
+        defaultValue={this.props.filterState.alias} /></Col>
+    </Form.Group>
+    <FormGroup>
+      <Button type="submit" variant="contained" color="primary" id="search"
+          size="small">Search</Button>
+      {'   '}
+     <Button variant="contained" color="primary" id="saveAndSearch"
+        onClick={this.filterDataAndSave} size="small">Save Alias in Server</Button>
+    </FormGroup>
+  </Form>
+</Collapse>
+*/
 
   // <Col sm={12}><TagsInput value={this.props.filterState.address} onChange={this.onAddressSelect}
   //   onlyUnique={true} maxTags={1} addOnPaste={true} defaultText inputProps={inputProps}

@@ -64,7 +64,7 @@ class UITableUtils extends React.Component {
       return;
     }
 
-    let imageSize = 24;
+    let imageSize = 32;
     let viewLabel = "Switch to desktop view";
     let viewSrc = "/images/expand.png";
 

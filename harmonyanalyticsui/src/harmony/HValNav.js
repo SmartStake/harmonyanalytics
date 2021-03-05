@@ -2,6 +2,7 @@ import React from 'react';
 import Table from 'react-bootstrap/Table';
 
 import config from '../config';
+import NetworkUtils from '../util/NetworkUtils';
 
 class HValNav extends React.Component {
   render() {
@@ -23,6 +24,7 @@ class HValNav extends React.Component {
             </tr>
             <tr>
               <th><a className="white-a" href={"/events/" + hPoolId}>Events</a></th>
+              <th><a className="white-a" href={"/keys/" + hPoolId}>BLS Key Performance</a></th>
             </tr>
             {this.renderSpecialTools(hPoolId)}
           </thead>
@@ -33,7 +35,7 @@ class HValNav extends React.Component {
 
 
   renderSpecialTools(hPoolId) {
-    if (hPoolId != config.apiGateway.DEFAULT_POOL_ID) {
+    if (!NetworkUtils.isDefaultPool(hPoolId)) {
       return "";
     }
 

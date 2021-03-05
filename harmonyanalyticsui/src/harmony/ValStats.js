@@ -1,11 +1,12 @@
 import React from 'react';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import BootstrapTable from 'react-bootstrap-table-next';
-import Breadcrumb from 'react-bootstrap/Breadcrumb';
+import {Container, Row, Col} from 'react-bootstrap';
 
 import BaseAreaChart from "../reports/BaseAreaChart";
 import BaseBarChart from '../reports/BaseBarChart';
 
+import tooltips from "../tooltips";
 import HValNav from './HValNav';
 import HValHeader from './HValHeader';
 import ApiUtils from '../util/ApiUtils';
@@ -48,6 +49,9 @@ class ValStats extends React.Component {
     var hPoolId = HUtils.getHPoolId(this);
     // console.log("hPoolId is:", hPoolId);
     let url = "listData?type=valPerf&hPoolId=" + hPoolId;
+    if (this.props.match && this.props.match.params.showMore) {
+      url += "&showMore=" + this.props.match.params.showMore;
+    }
 
     const allData = await ApiUtils.get(url);
     // console.log("allData is:", allData);
@@ -88,7 +92,7 @@ class ValStats extends React.Component {
     } else {
       otherStatsColumns = [
         {text: "Epoch",dataField: "title", sort: true, headerStyle: Utilities.width(15)},
-        {text: "BLS Keys", dataField: "blsKeyCount", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
+        {text: "Keys", dataField: "blsKeyCount", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
         {text: "Delegates", dataField: "uniqueDelegates", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(20)},
         {text: "Self Stake", dataField: "selfStake", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(15)},
         {text: "Stake", dataField: "totalStaked", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(15)},
@@ -111,57 +115,63 @@ class ValStats extends React.Component {
         <HValHeader val={this.state.val} notification={this.state.notification} title="Validator Stats"/>
 
         <hr/>
-        {ChartUtils.render2Lines(this, "Expected Returns Index (ERI) by Epoch", this.state.perfData,
-          "Epoch", "Expected Returns", "eri", "average", "eri")}
-        <hr/>
-        {ChartUtils.render2Lines(this, "Expected Returns (ER) by Epoch", this.state.perfData,
-          "Epoch", "Expected Returns", "er", "netEr", "er")}
-
-        <hr/>
-        <BaseAreaChart title="Stake History" xAxis="Epoch" yAxis="Total Staked (millions)"
-          showVerticalLabel={false} valueAttr="totalStakeInMillions"
-          data={this.state.perfData} />
-
-        <hr/>
-        <p><b>Delegate Count History</b></p>
-        <BaseBarChart xAxis="Epoch" yAxis="# of Delegates"
-          showVerticalLabel={true} valueAttr="uniqueDelegates" showTotalLabel={false}
-          data={this.state.perfData} xAxisValueAttr="title" />
-        <hr/>
-
-        <p/><p><b>Epoch Performance Summary</b></p>
-        <BootstrapTable keyField='epoch' data={ this.state.perfData }
-          columns={ columns } striped options={options} defaultSorted={defaultSorted}
-          condensed noDataIndication="Table is Empty/Loading"
-          />
-
-        <hr/>
-        <p/><p><b>Other Stats</b></p>
-        <BootstrapTable keyField='epoch' data={ this.state.perfData }
-          columns={ otherStatsColumns } striped options={options} defaultSorted={defaultSorted}
-          condensed noDataIndication="Table is Empty/Loading"
-          />
-
+        <Container fluid>
+          <Row>
+            <Col md className="chartBg">
+              {ChartUtils.render2Lines(this, "Expected Returns Index (ERI) by Epoch", this.state.perfData,
+                "Epoch", "Expected Returns", "eri", "average", "eri", null, tooltips.valStats.eriHistory)}
+            </Col>
+            <Col md className="chartBg">
+              {ChartUtils.render2Lines(this, "Expected Returns (ER) by Epoch", this.state.perfData,
+                "Epoch", "Expected Returns", "er", "netEr", "er", null, tooltips.valStats.erHistory)}
+            </Col>
+          </Row>
+          <hr/>
+          <Row>
+            <Col md className="chartBg">
+              <BaseAreaChart title="Stake History" xAxis="Epoch" yAxis="Total Staked (millions)"
+                showVerticalLabel={false} valueAttr="totalStakeInMillions"
+                desc={tooltips.valStats.stakeHistory} data={this.state.perfData} />
+            </Col>
+            <Col md className="chartBg">
+              <p><b>Delegate Count History</b> - {this.renderMore()}</p>
+              <BaseBarChart xAxis="Epoch" yAxis="# of Delegates"
+                showVerticalLabel={true} valueAttr="uniqueDelegates" showTotalLabel={false}
+                desc={tooltips.valStats.delegateHistory} data={this.state.perfData} xAxisValueAttr="title" />
+            </Col>
+          </Row>
+          <hr/>
+          <Row>
+            <Col md className="chartBg">
+              <p><b>Epoch Performance Summary</b> - {this.renderMore()}</p>
+              <BootstrapTable keyField='epoch' data={ this.state.perfData }
+                columns={ columns } striped options={options} defaultSorted={defaultSorted}
+                condensed noDataIndication="Table is Empty/Loading"
+                />
+            </Col>
+            <Col md className="chartBg">
+              <p><b>Other Stats</b> - {this.renderMore()}</p>
+              <BootstrapTable keyField='epoch' data={ this.state.perfData }
+                columns={ otherStatsColumns } striped options={options} defaultSorted={defaultSorted}
+                condensed noDataIndication="Table is Empty/Loading"
+                />
+            </Col>
+          </Row>
+        </Container>
         <HValNav hPoolId={this.state.val.hPoolId}/>
       </div>
     );
   }
 
-  getBreadCrumb() {
-    if (window.innerWidth < 1000) {
-      return (
-        <Breadcrumb>
-          <Breadcrumb.Item href="/">Validators</Breadcrumb.Item>
-        </Breadcrumb>
-      );
-    } else {
-      return "";
+  renderMore() {
+    // console.log(this.props.match.params.showMore)
+    // console.log(this.props.match.params.showMore == 'true')
+    if (this.props.match && this.props.match.params.showMore == 'true') {
+      return (<a class="black-a" href={"/valstats/" + this.state.val.hPoolId + "/false"}>Show Less</a>);
     }
-  }
 
-  // reload() {
-  //   window.location = "/val/" + this.state.val.hPoolId;
-  // }
+    return (<a class="black-a" href={"/valstats/" + this.state.val.hPoolId + "/true"}>Show More</a>);
+  }
 
 }
 

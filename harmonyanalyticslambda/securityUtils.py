@@ -12,7 +12,7 @@ logger.setLevel(logging.INFO)
 
 # first key is service key
 validKeys = [rds_config.SECURITY_KEY_1, rds_config.SECURITY_KEY_2]
-tokenGrace = 1000 * 60 * 60
+tokenGrace = 24 * 60 * 60
 
 
 class CallRejectedException(Exception):

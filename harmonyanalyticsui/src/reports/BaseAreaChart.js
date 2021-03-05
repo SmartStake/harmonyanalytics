@@ -3,6 +3,8 @@ import {ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Label } from 
 import {AreaChart, Area} from 'recharts';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import BootstrapTable from 'react-bootstrap-table-next';
+import InfoIcon from '@material-ui/icons/Info';
+import ReactTooltip from 'react-tooltip';
 
 import UIUtils from '../util/UIUtils';
 import Utilities from '../util/Utilities';
@@ -29,6 +31,10 @@ class BaseAreaChart extends React.Component {
     let width = UIUtils.getResponsiveWidth(this);
     let height = UIUtils.getChartHeight(this);
     let showDataLabel = UIUtils.getShowDataLabel(this, this.props.data, 600);
+    let calculateRange = true;
+    if (this.props.defaultRange) {
+      calculateRange = this.props.defaultRange;
+    }
 
     return (
       <div>
@@ -39,7 +45,7 @@ class BaseAreaChart extends React.Component {
             <XAxis dataKey="title" angle={-10}>
               <Label value={this.props.xAxis} offset={-3} position="insideBottom" />
             </XAxis>
-            <YAxis domain={Utilities.getRange(true, this.props.data, this.props.valueAttr)}>
+            <YAxis domain={Utilities.getRange(calculateRange, this.props.data, this.props.valueAttr)}>
               <Label value={this.props.yAxis} offset={8} position="insideBottomLeft" angle={-90} />
             </YAxis>
             <Tooltip/>
@@ -55,10 +61,16 @@ class BaseAreaChart extends React.Component {
   render () {
   	return (
       <div>
-        <b><span align="left">{this.props.title}</span></b>
+        <ReactTooltip id="main" place="top" type="dark" effect="float" multiline={true} />
+        <b>
+          <span align="left">{this.props.title}</span>
+          <span className="buttonWithText"><span data-for="main" data-tip={this.props.desc} data-iscapture="true"><InfoIcon color="action"/></span></span>
+        </b>
         <p/>
         <div align="center">
-          {this.props.showTotalLabel ? Utilities.getTotalWithLabel(this.props.data, this.props.valueAttr, this.props.totalLabel) : ""}.
+          {this.props.showTotalLabel ? Utilities.getTotalWithLabel(this.props.data, this.props.valueAttr, this.props.totalLabel) : ""}
+          {this.props.showLatestLabel ? this.props.latestLabelPrefix + ": " + Utilities.getLastRecordAttribute(this.props.data, this.props.valueAttr) + "." : ""}
+          {this.props.showPrevLabel ? this.props.latestLabelPrefix + ": " + Utilities.getSecondLastRecordAttribute(this.props.data, this.props.valueAttr) + "."  : ""}
           {this.renderAreaChart()}
         </div>
         {ChartUtils.getLandscapeMsg()}

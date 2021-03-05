@@ -12,16 +12,16 @@ logger.setLevel(logging.INFO)
 
 
 def listRewardsHistory(conn, app, event, showHistory, startTime):
-	logger.info("in listRewardsHistory")
+	# logger.info("in listRewardsHistory")
 	address = event["queryStringParameters"]["address"]
 
-	logger.info("obtaining getRewardsDetails for address: {}".format(address))
+	# logger.info("obtaining getRewardsDetails for address: {}".format(address))
 	history = getRewardsDetails(conn, address)
 
-	logger.info("obtaining getRewardsHistorySummary for address: {}".format(address))
+	# logger.info("obtaining getRewardsHistorySummary for address: {}".format(address))
 	historySummary = getRewardsHistorySummary(conn, address, '%%Y-%%m')
 
-	logger.info("obtaining getRewardsHistorySummary for address: {}".format(address))
+	# logger.info("obtaining getRewardsHistorySummary for address: {}".format(address))
 	historySummaryAnnual = getRewardsHistorySummary(conn, address, '%%Y')
 
 	coinStat = commonUtils.getCoinStat(conn, app)

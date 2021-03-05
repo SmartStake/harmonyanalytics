@@ -46,9 +46,9 @@ class Events extends React.Component {
     if (this.props.match && this.props.match.params.subType) {
       url += "&subType=" + this.props.match.params.subType;
     }
-    console.log(url);
+    // console.log(url);
     const allData = await ApiUtils.get(url);
-    console.log("allData is:", allData);
+    // console.log("allData is:", allData);
 
     if (allData) {
       let val = allData["val"];
@@ -71,11 +71,13 @@ class Events extends React.Component {
         <p/>
         <HValHeader val={this.state.val} notification={this.state.notification} desktopView={true} title="Events"/>
         {HUtils.renderEventTypes(this)}
-        <EventsInline data={this.state.data} hPoolId={this.state.val.hPoolId} isWidget={false} />
+        <EventsInline data={this.state.data} hPoolId={this.state.val.hPoolId} isWidget={false} context="network" pageSize="50" />
         <HValNav hPoolId={this.state.val.hPoolId}/>
       </div>
     );
   }
+  // {UIUtils.renderEventTypes(this)}
+  // <EventsInline data={this.state.data} callerId="events" />
 
 }
 

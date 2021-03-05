@@ -37,7 +37,41 @@ class Utilities extends React.Component {
       return "";
     }
 
-    for (let i = 0, tableDataLen = data.length; i < tableDataLen; i++) {
+    for (let i = 0; i < data.length; i++) {
+      if (data[i][key] != null) {
+        // console.log(i + " - returning : " + key + " - " + data[i][key]);
+        return data[i][key];
+      }
+    }
+
+    return null;
+  }
+
+  static getLastRecordAttribute(data, key) {
+    if (!data || data.length === 0) {
+      return "";
+    }
+
+    for (let i = data.length - 1; i > 0; i--) {
+      if (data[i][key] != null) {
+        // console.log(i + " - returning : " + key + " - " + data[i][key]);
+        return data[i][key];
+      }
+    }
+
+    return null;
+  }
+
+  static getSecondLastRecordAttribute(data, key) {
+    // console.log(data);
+    // console.log(key);
+    if (!data || data.length < 2) {
+      return "";
+    }
+
+    // console.log(data[data.length - 2]);
+    for (let i = data.length - 2; i >= 0; i--) {
+      // console.log(data[i][key]);
       if (data[i][key] != null) {
         // console.log(i + " - returning : " + key + " - " + data[i][key]);
         return data[i][key];
@@ -435,10 +469,14 @@ class Utilities extends React.Component {
   }
 
   static getRange(calc, data, key) {
+    // console.log(data);
+    // console.log("calc: ", calc, ", key: ", key);
     let domainMin = "0";
     let domainMax = "auto";
-    if (calc) {
+    if (calc === true) {
+      // console.log("calculating")
       domainMin = Utilities.getMinValueForAttribute(data, key);
+      // console.log("domainMin: ", domainMin)
       if (domainMin > 0) {
         domainMin = parseInt(domainMin*0.9);
       }
@@ -449,6 +487,7 @@ class Utilities extends React.Component {
       }
     }
 
+    // console.log("domainMin: ", domainMin, ", domainMax: ", domainMax);
     return [domainMin, domainMax];
   }
 
@@ -518,6 +557,100 @@ class Utilities extends React.Component {
     return 0;
   }
 
+  static removeEmptyRecords(data, key) {
+    if (!data) {
+      return data;
+    }
+
+    // console.log(key)
+    let finalData = []
+    for (let i = 0, tableDataLen = data.length; i < tableDataLen; i++) {
+      // console.log(data[i][key], " - ", data[i])
+      if (data[i][key]) {
+        finalData.push(data[i])
+      }
+    }
+    // console.log("initial data: ", data.length, ", final data: ", finalData.length);
+
+    return finalData;
+  }
+
+  static getElementByAttribute(data, key, value) {
+    // console.log("in getElementByAttribute by key: '" +  key + "', value: '" + value + "'");
+    if (!data || !value) {
+      // console.log("in getElementByAttribute returning null");
+      return null;
+    }
+
+    for (let i = 0, tableDataLen = data.length; i < tableDataLen; i++) {
+      // console.log("in getElementByAttribute: ", data[i], ", key - ", data[i][key]);
+      if (data[i][key] && parseInt(data[i][key]) === parseInt(value)) {
+        return data[i];
+      }
+    }
+
+    return null;
+  }
+
+  static moveElementToTop(data, key, value) {
+    if (!data) {
+      return data;
+    }
+
+    // console.log(con fig.apiGa teway.DEFAULT _POOL_ID);
+    for(let i=0; i < data.length; i++) {
+      // console.log(data[i]);
+      // console.log(data[i].code);
+      if (data[i][key] === value) {
+        // console.log("match found");
+        let val = data[i];
+        let item = data.splice(i,1);
+        // console.log("removed item: ", item);
+        data.unshift(val);
+        break;
+      }
+    }
+
+    return data;
+  }
+
+  static calcPercent(data, inputKey) {
+    if (!data) {
+      return data;
+    }
+
+    let totalAmount = 0;
+    for (let i = 0, tableDataLen = data.length; i < tableDataLen; i++) {
+      if (!isNaN(data[i][inputKey])) {
+        totalAmount += parseFloat(data[i][inputKey]);
+      }
+    }
+
+    if (totalAmount === 0) {
+      return data;
+    }
+
+    for (let i = 0, tableDataLen = data.length; i < tableDataLen; i++) {
+      if (data[i][inputKey] != null && !isNaN(data[i][inputKey]) ) {
+        let value = parseInt(data[i][inputKey]);
+        data[i]["percent"] = parseFloat((value * 100/totalAmount).toFixed(2));
+      } else {
+        data[i]["percent"] = 0;
+      }
+    }
+
+    return data;
+  }
+
+  static getFirstXChars(text, length) {
+    if (!text) return text;
+
+    if (text.length > length) {
+      return text.substring(0, length);
+    }
+
+    return text;
+  }
 }
 
 export default Utilities;

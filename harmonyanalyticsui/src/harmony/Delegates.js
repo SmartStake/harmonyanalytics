@@ -63,7 +63,7 @@ class Delegates extends React.Component {
     var columns;
     if (window.innerWidth < 600) {
       columns = [
-        {text: "Overall Rank",dataField: "rank", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(15)},
+        {text: "Overall Rank",dataField: "ranking", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(15)},
         {text: "Address",dataField: "address", formatter: HUtils.addressFormatterDel, sort: true, headerStyle: Utilities.width(41)},
         {text: "Stake",dataField: "stake", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(26)},
         {text: "Reward",dataField: "reward", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(18)}
@@ -71,14 +71,14 @@ class Delegates extends React.Component {
     } else {
       columns = [
         {text: "#",dataField: "index", sort: true, headerStyle: Utilities.width(5)},
-        {text: "Overall Rank",dataField: "rank", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
+        {text: "Overall Rank",dataField: "ranking", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(10)},
         {text: "Address",dataField: "address", formatter: HUtils.addressFormatterDel, sort: true, headerStyle: Utilities.width(40)},
         {text: "Stake",dataField: "stake", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(25)},
         {text: "Reward",dataField: "reward", sort: true,  sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(15)}
       ];
     }
 
-    const options = UIUtils.getPageOptionsSmall(this);
+    const options = UIUtils.getPageOptionsSmall(this, 50);
 
     return (
       <div>

@@ -3,13 +3,16 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import Table from 'react-bootstrap/Table';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
+import ReactTooltip from "react-tooltip";
 
+import Contact from "../base/Contact";
 import UITableUtils from "../util/UITableUtils";
 import constants from "../constants";
 import CollapsibleNote from "../base/CollapsibleNote";
 
 import HNotes from "../harmony/HNotes";
 import UIUtils from "../util/UIUtils";
+import LogoUtils from "../util/LogoUtils";
 import ApiUtils from '../util/ApiUtils';
 import "./Validators.css";
 import SPCalc from '../util/SPCalc';
@@ -30,6 +33,7 @@ class Validators extends React.Component {
       validators: [],
       coinStat: {},
       statusSummary: {},
+      blockRate: {},
       notification: {"message": null},
       width: window.innerWidth,
       size: 10,
@@ -80,6 +84,13 @@ class Validators extends React.Component {
       let newValidators = Utilities.addIndex(validators);
       let finalData = FavUtils.filterData(this, newValidators);
 
+      let cumulativeWeight = 0
+      for(let i=0;i < finalData.length; i++) {
+        let val = finalData[i];
+        cumulativeWeight += val.stakeWeight;
+        val.cumulativeWeight = cumulativeWeight;
+      }
+
       let newLastUpdated = lastUpdated;
       if (lastUpdated == null) {
         newLastUpdated = 0;
@@ -110,44 +121,54 @@ class Validators extends React.Component {
     var columns;
     if (RespUtils.isMobileView()) {
       columns = [
-        {text: "",dataField: "hPoolId", sort: true, formatter: FavUtils.favoriteFormatter, formatExtraData: this, headerStyle: Utilities.width(5)},
-        {text: "Name", dataField: "name", formatter: HUtils.nameFormatterShort, sort: true, headerStyle: Utilities.width(23)},
-        {text: "Total Staked", dataField: "totalStaked", sort: true, formatter: SPUtilities.stakeFormatterRounded, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(17)},
-        {text: "Status", dataField: "status", formatter: HUtils.statusFormatter, sort: true, headerStyle: Utilities.width(18)},
-        {text: "Avg ERI", dataField: "avgEri", formatter: HUtils.eriFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(17)},
+        {text: "",dataField: "hPoolId", sort: true, style: HUtils.consensusStyleFormatter, formatter: FavUtils.favoriteFormatter, formatExtraData: this, headerStyle: Utilities.width(5)},
+        {text: "Name", dataField: "name", formatter: HUtils.nameFormatterShort, sort: true, headerStyle: Utilities.width(24)},
+        {text: "Staked", dataField: "totalStaked", sort: true, formatter: SPUtilities.stakeFormatterRounded, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(15)},
+        {text: "ERI", dataField: "avgEri", formatter: HUtils.eriFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(19)},
         {text: "Sign %", dataField: "currentEpochSignPer", formatter: HUtils.signPerFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(20)},
       ];
     } else if (RespUtils.isTabletView()) {
       columns = [
-        {text: "",dataField: "hPoolId", sort: true, formatter: FavUtils.favoriteFormatter, formatExtraData: this, headerStyle: Utilities.width(5)},
-        // {text: "",dataField: "logoPath", sort: true, formatter: HUtils.logoFormatter, formatExtraData: this, headerStyle: Utilities.width(4)},
-        {text: "Name", dataField: "name", formatter: HUtils.nameFormatterShort, sort: true, headerStyle: Utilities.width(20)},
-        {text: "Total Staked", dataField: "totalStaked", sort: true, formatter: SPUtilities.stakeFormatterRounded, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
-        {text: "Status", dataField: "status", formatter: HUtils.statusFormatter, sort: true, headerStyle: Utilities.width(18)},
-        {text: "Fee", dataField: "fee", sort: true, formatter: HUtils.getFee, formatExtraData: this.state.coinStat.currentEpoch, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
+        {text: "",dataField: "hPoolId", sort: true, style: HUtils.consensusStyleFormatter, formatter: FavUtils.favoriteFormatter, formatExtraData: this, headerStyle: Utilities.width(5)},
+        {text: "",dataField: "address", sort: true, formatter: LogoUtils.formatLogo, headerStyle: Utilities.width(4)},
+        {text: "Name", dataField: "name", formatter: HUtils.nameFormatterShort, sort: true, headerStyle: Utilities.width(13)},
+        {text: "Staked", dataField: "totalStaked", sort: true, formatter: SPUtilities.stakeFormatterRounded, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
+        {text: "Status", dataField: "status", formatter: HUtils.statusFormatter, sort: true, headerStyle: Utilities.width(16)},
+        {text: "Fee", dataField: "fee", sort: true, formatter: HUtils.getFee, formatExtraData: this.state.coinStat.currentEpoch, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(9)},
         {text: "Avg ERI", dataField: "avgEri", formatter: HUtils.eriFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
-        {text: "Current ERI", dataField: "currentEri", formatter: HUtils.eriFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
+        {text: "Current ERI", dataField: "currentEri", formatter: HUtils.eriFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(18)},
         {text: "Sign %", dataField: "currentEpochSignPer", formatter: HUtils.signPerFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(12)},
       ];
     } else {
       columns = [
         {text: "",dataField: "hPoolId", sort: true, formatter: FavUtils.favoriteFormatter, formatExtraData: this, headerStyle: Utilities.width(2)},
-        {text: "Name", dataField: "name", formatter: HUtils.nameFormatter, sort: true, headerStyle: Utilities.width(13)},
-        {text: "Total Staked", dataField: "totalStaked", sort: true, formatter: HUtils.coinCountCellFormatter, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(8)},
-        {text: "Fee", dataField: "fee", sort: true, formatter: HUtils.getFee, formatExtraData: this.state.coinStat.currentEpoch, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(6)},
+        {text: "",dataField: "address", sort: true, formatter: LogoUtils.formatLogo, headerStyle: Utilities.width(2)},
+        {text: "Name", dataField: "name", formatter: HUtils.nameFormatter, sort: true, headerStyle: Utilities.width(10)},
+        {text: "Total Staked", dataField: "totalStaked", sort: true, formatter: SPUtilities.formatCoins, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(8)},
+        {text: "Fee", dataField: "fee", sort: true, formatter: HUtils.getFee, formatExtraData: this.state.coinStat.currentEpoch, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(5)},
+        {text: "Stake Weight", dataField: "stakeWeight", sort: true, formatter: HUtils.progressFormatter, style: HUtils.progressStyle, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
         {text: "Status", dataField: "status", formatter: HUtils.statusFormatter, sort: true, headerStyle: Utilities.width(8)},
         {text: "Delegates", dataField: "uniqueDelegates", sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(6)},
+        {text: "Election Rate", dataField: "electionRate", formatter: HUtils.intFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(6)},
         {text: "Avg ER", dataField: "avgApr", sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(5)},
         {text: "Avg ERI", dataField: "avgEri", sort: true, formatter: HUtils.eriFormatter, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(5)},
-        {text: "Avg Sign %", dataField: "lifetimeSignPer", formatter: HUtils.signPerFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
-        {text: "Last ER", dataField: "prevEpochApr", sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(6)},
+        {text: "Avg Sign %", dataField: "avgSignPer", formatter: HUtils.signPerFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
+        // {text: "Last ER", dataField: "prevEpochApr", sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(6)},
         {text: "Last ERI", dataField: "prevEpochEri", sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(5)},
-        {text: "Current ER", dataField: "currentApr", formatter: HUtils.showCurrentReturns, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
+        // {text: "Current ER", dataField: "currentApr", formatter: HUtils.showCurrentReturns, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
         {text: "Current ERI", dataField: "currentEri", formatter: HUtils.eriFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
         {text: "Current Sign %", dataField: "currentEpochSignPer", formatter: HUtils.signPerFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(9)},
-        {text: "Stake", dataField: "address", sort: false, formatter: HUtils.stakeFormatter, headerStyle: Utilities.width(6)},
+        {text: "Stake", dataField: "address", sort: false, formatter: HUtils.stakeFormatter, headerStyle: Utilities.width(4)},
       ];
     }
+    // {text: "",dataField: "logoPath", sort: true, formatter: HUtils.logoFormatter, formatExtraData: this, headerStyle: Utilities.width(3)},
+    // , filter: textFilter({placeholder: "Name"})
+    // {text: "Address", dataField: "address", formatter: HUtils.addressFormatter, formatExtraData: this, sort: true, headerStyle: Utilities.width(12)},
+    // {text: "Self Stake", dataField: "selfStake", sort: true, formatter: HUtils.coinCountCellFormatter, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
+    // {text: "BLS Key Count", dataField: "blsKeyCount", sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(7)},
+    // {text: "BLS # by Median Stake", dataField: "optimalBlsKeyCount", formatter: HUtils.blsKeyCountFormatter, sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(6)},
+    // {text: "Bid per seat", dataField: "bidPerSeat", sort: true, formatter: HUtils.coinCountCellFormatter, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(6)},
+    // {text: "Avg Net ER", dataField: "avgNetApr", sort: true, sortFunc: Utilities.sortNumeric, headerStyle: Utilities.width(6)},
 
     const options = {
       onlyOneExpanding: true
@@ -182,18 +203,24 @@ class Validators extends React.Component {
 
     let lastUpdated = this.state.lastUpdated ? (this.state.lastUpdated/60).toFixed(0) : "N/A";
     let wrapperClasses = UITableUtils.isDefaultView() ? "table":"table-responsive";
+    //{UITableUtils.renderSwitchView(this)}
+    // <a className="regular-b-a" target="_blank"
+    //     href="https://harmony.one/"><img src="/images/logo/harmony.png" width="28"
+    //     height="28" className="d-inline-block align-top" alt="Harmony"
+    //     /><strong>Harmony</strong></a>
     return (
       <div>
         <p/>
         <h4 style={{align: "center"}}><span><strong>Validators</strong></span>
-            <span className="buttonWithText">{FavUtils.showFavSwitch()}&nbsp;<img src="/images/reload.svg" onClick={this.reload} title="Reload Screen"
-              className="imgicon" width="32" height="32" /></span>
+            {UIUtils.renderPageActions(this, true, true)}
         </h4>
+        {HUtils.renderRewards()}
         <HNetworkHeader coinStat={this.state.coinStat} />
-        <p>Last updated - <b>{lastUpdated}</b> minutes ago. Try our telegram bot <a target="_blank" class="black-a" href="https://t.me/HarmonyAnalyticsBot">HarmonyAnalyticsBot</a>.</p>
+        <p>Last updated - <b>{lastUpdated}</b> minutes ago. Try our telegram bot <a target="_blank" class="black-a" href="https://t.me/HarmonyAnalyticsBot">HarmonyAnalyticsBot</a>. <a href="https://talk.harmony.one/t/how-to-use-harmony-analytics-dashboard/911" class="black-a" target="_blank">Click here</a> to learn how to use the dashboard. <a href="https://staking.harmony.one" class="black-a" target="_blank">Harmony Staking Dashboard</a></p>
         {this.renderStatusTags()}
         {UIUtils.getNotification(this.state.notification)}
         <p/>
+        <ReactTooltip id="main" place="top" type="dark" effect="float" multiline={true} />
         <BootstrapTable keyField='hPoolId' data={ this.state.validators } filter={ filterFactory() }
           columns={ columns } hover striped expandRow={ expandRow }
           expandableRow={ () => { return true; } }  rowStyle={rowStyle}
@@ -203,6 +230,7 @@ class Validators extends React.Component {
         <CollapsibleNote getScreenGuide={HNotes.getPoolNote} />
         {HUtils.getSupportUs()}
         {specialMessage}
+        <Contact />
       </div>
     );
   }
@@ -211,27 +239,35 @@ class Validators extends React.Component {
 
   renderStatusTags() {
     if (this.state.isLoading) return "";
-
-    if (RespUtils.isTabletView()) {
+    // <td className="view-tag"><a href={"/validators/All"}>{this.formatView("All " + this.state.statusSummary.Total, "All")}</a> </td>
+    // <td className="view-tag"><a href={"/validators/All"}>{this.formatView("All - " + this.state.statusSummary.Total, "All")}</a> </td>
+    // console.log(RespUtils.isMobileView());
+    if (RespUtils.isMobileView()) {
       return (<div><table><tbody><tr>
-          <td className="view-tag"><a className="white-a" href={"/validators/AllEligible"}>{this.formatView("All - " + (this.state.statusSummary.Elected + this.state.statusSummary.Eligible), "AllEligible")}</a> </td>
-          <td className="view-tag"><a className="white-a" href={"/validators/Elected"}>{this.formatView("Elec " + this.state.statusSummary.Elected, "Elected")}</a> </td>
-          <td className="view-tag"><a className="white-a" href={"/validators/Eligible"}>{this.formatView("Elig " + this.state.statusSummary.Eligible, "Eligible")}</a> </td>
-          <td className="view-tag"><a className="white-a" href={"/validators/NotEligible"}>{this.formatView("Not elig " + this.state.statusSummary.NotEligible, "NotEligible")}</a> </td>
-          <td className="view-tag"><a className="white-a" href={"/validators/FeeIncrease"}>{this.formatView("Fee + " + this.state.statusSummary.FeeIncrease, "FeeIncrease")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/AllEligible"}>{this.formatView("All ", (this.state.statusSummary.Elected + (this.state.statusSummary.Eligible?this.state.statusSummary.Eligible:0)), "AllEligible")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/Elected"}>{this.formatView("Ele ", this.state.statusSummary.Elected, "Elected")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/Eligible"}>{this.formatView("Eli ", this.state.statusSummary.Eligible, "Eligible")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/NotEligible"}>{this.formatView("Not eli ", this.state.statusSummary.NotEligible, "NotEligible")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/FeeIncrease"}>{this.formatView("Fee+ ", this.state.statusSummary.FeeIncrease, "FeeIncrease")}</a> </td>
         </tr></tbody></table></div>);
     } else {
       return (<div><table><tbody><tr>
-          <td className="view-tag"><a className="white-a" href={"/validators/AllEligible"}>{this.formatView("All Eligible - " + (this.state.statusSummary.Elected + this.state.statusSummary.Eligible), "AllEligible")}</a> </td>
-          <td className="view-tag"><a className="white-a" href={"/validators/Elected"}>{this.formatView("Elected - " + this.state.statusSummary.Elected, "Elected")}</a> </td>
-          <td className="view-tag"><a className="white-a" href={"/validators/Eligible"}>{this.formatView("Eligible - " + this.state.statusSummary.Eligible, "Eligible")}</a> </td>
-          <td className="view-tag"><a className="white-a" href={"/validators/FeeIncrease"}>{this.formatView("Fee Increase " + this.state.statusSummary.FeeIncrease, "FeeIncrease")}</a> </td>
-          <td className="view-tag"><a className="white-a" href={"/validators/NotEligible"}>{this.formatView("Not Eligible - " + this.state.statusSummary.NotEligible, "NotEligible")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/AllEligible"}>{this.formatView("All Eligible ", (this.state.statusSummary.Elected + (this.state.statusSummary.Eligible?this.state.statusSummary.Eligible:0)), "AllEligible")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/Elected"}>{this.formatView("Elected ", this.state.statusSummary.Elected, "Elected")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/Eligible"}>{this.formatView("Eligible ", this.state.statusSummary.Eligible, "Eligible")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/FeeIncrease"}>{this.formatView("Fee Increase ", this.state.statusSummary.FeeIncrease, "FeeIncrease")}</a> </td>
+          <td className="view-tag"><a className="white-a" href={"/validators/NotEligible"}>{this.formatView("Not Eligible ", this.state.statusSummary.NotEligible, "NotEligible")}</a> </td>
         </tr></tbody></table></div>);
     }
   }
 
-  formatView(label, status) {
+  formatView(label, count, status) {
+    if (count != null) {
+      label = label + count;
+    } else {
+      label = label + "0";
+    }
+
     // console.log("in formatView for: ", label, status);
     if (this.props.match && this.props.match.params.status) {
       if (this.props.match.params.status == status) {

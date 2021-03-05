@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+// import Routes from './Routes-auth';
 import {BrowserRouter as Router} from 'react-router-dom';
 import { Route } from 'react-router-dom';
 import Fullscreen from "react-full-screen";
@@ -11,8 +12,11 @@ import HNavBar from './harmony/HNavBar';
 import Footer from './base/Footer';
 import UIUtils from './util/UIUtils';
 import Utilities from './util/Utilities';
+import NetworkUtils from './util/NetworkUtils';
 import config from './config';
-import Contact from "./base/Contact";
+// import { withAuthenticator } from 'aws-amplify-react'; // or 'aws-amplify-react-native';
+
+// FIXME TODO removed margin from react-bootstrap-table-pagination
 
 class App extends Component {
   constructor(props) {
@@ -41,11 +45,11 @@ class App extends Component {
   }
 
   getNonProdWarning() {
-    if (config.apiGateway.ENV == "prod") {
-      return "";
+    if (NetworkUtils.isDevnet()) {
+      return (<div className="headerWarning"><p/><p/>This is a test website. Contact the website operator to report the issue.</div>);
     }
 
-    return (<div className="headerWarning"><p/><p/>This is a test website. Contact the website operator to report the issue.</div>);
+    return "";
   }
 
   render() {
@@ -56,7 +60,7 @@ class App extends Component {
       return (
        <div>
          <h3>{"Oh-no! Something went wrong"}</h3>
-         <p className="red">Please <a href="javascript:location.reload(true);">reload</a> the screen and try again. Please contact the website operator <a href='https://t.me/bigb4ever'>here</a> if the issue persists.</p>
+         <p className="red">Please <a href="javascript:location.reload(true);">reload</a> the screen and try again. Please contact the website operator <a href='https://t.me/SmartStake'>here</a> if the issue persists.</p>
          <p align="center"><a href="javascript:window.location='/'">Home</a>&nbsp;&nbsp;&nbsp;<a href="javascript:window.location.reload(true);">Reload</a></p>
        </div>
       );
@@ -66,7 +70,7 @@ class App extends Component {
   }
 
   setupAnalytics() {
-    ReactGA.initialize(config.apiGateway.GA_ID);
+    ReactGA.initialize(NetworkUtils.getGaId());
     ReactGA.pageview('/');
     // ReactGA.set({});
     const history = createBrowserHistory();
@@ -97,7 +101,6 @@ class App extends Component {
                 <DefaultRoutes childProps={childProps} />
               </main>
               <Footer/>
-              <Contact />
             </div>
           </div>
         </Fullscreen>

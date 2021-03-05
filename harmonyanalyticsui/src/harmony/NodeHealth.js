@@ -171,7 +171,7 @@ class NodeHealth extends React.Component {
             <li>Gap of &lt;5 means that 'Smart Stake' validator is essentially in sync with the Harmony Network.</li>
             <li>Time elapsed of &lt;10 minutes means that health reporting is working.</li>
             <li>Click anywhere on a record to see more details.</li>
-            <li><a href='https://t.me/bigb4ever' target='_blank'>Contact Validator</a> to report issues.</li>
+            <li><a href='https://t.me/SmartStake' target='_blank'>Contact Validator</a> to report issues.</li>
           </ul>
         </div>
       </div>
@@ -236,6 +236,11 @@ class NodeHealth extends React.Component {
   static dateFormatter(value, row) {
       return SPUtilities.getDateTimeAsText(value);
   }
+
+  // reload() {
+  //   window.location = "/health/1";
+  //   // + this.state.pool.poolId;
+  // }
 
 }
 

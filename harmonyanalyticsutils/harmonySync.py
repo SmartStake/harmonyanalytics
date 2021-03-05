@@ -9,6 +9,9 @@ import logUtil
 
 logger = logUtil.l()
 
+if len(sys.argv) < 4:
+    raise Exception("correct syntax is: python harmonySync dev/prod logsPath val/del")
+
 mode = sys.argv[3]
 
 MODE_VAL="val"
@@ -35,7 +38,9 @@ def syncValidator(session, allValidators, delegateCount):
         "allValidators": allValidators
     }
 
-    commonUtils.postReq(constants.updateUrl, reqDetails)
+    # logger.info(reqDetails)
+
+    commonUtils.postReq(constants.harmonyValSyncUrl, reqDetails)
 
 
 def getAllValidators(session):
@@ -55,12 +60,16 @@ def getAllValidators(session):
     allDelegates = set()
     allDelegations = []
 
+    minValData = 110
+    currentValData = 0
+    skippedVal = 0
+
     for validatorData in vData:
         # if i >= 0:
         #     continue
 
         validator = validatorData["validator"]
-        logger.info(str(i) + " - processing validator ")
+        # logger.info(str(i) + " - processing validator ")
         # logger.info(validator)
 
         i += 1
@@ -84,8 +93,8 @@ def getAllValidators(session):
                 "lifetimeApr": perf["apr"],
             }
 
-        logger.info("lifetime is: ")
-        logger.info(lifetimePerf)
+        # logger.info("lifetime is: ")
+        # logger.info(lifetimePerf)
         elected = "False"
         if validatorData["epos-status"] == "currently elected":
             elected = "True"
@@ -115,19 +124,27 @@ def getAllValidators(session):
             "lifetimePerf": lifetimePerf,
             "selfStake": selfStake,
             "activeStatus":  validatorData["active-status"],
-            "status": getStatus(validatorData["epos-status"])
+            "status": commonUtils.getStatus(validatorData["epos-status"])
         }
-        validators.append(vReq)
-        allDelegates = allDelegates.union(delegateAddresses)
-        allDelegations.append(delegations)
 
-    logger.info("looped through all nodes : " + str(len(validators)))
+        currentValData += 1
+        # if constants.syncAllValidators or vReq["status"] != constants.H_STATUS_NOT_ELIGIBLE:
+        if constants.syncAllValidators or vReq["status"] == constants.H_STATUS_ELECTED \
+                or vReq["status"] == constants.H_STATUS_ELIGIBLE or currentValData < minValData:
+            validators.append(vReq)
+            allDelegates = allDelegates.union(delegateAddresses)
+            allDelegations.append(delegations)
+        else:
+            skippedVal += 1
+
+    logger.info("looped through all validators : " + str(len(validators)))
+    logger.info("skipped validators : " + str(skippedVal))
 
     return validators, len(allDelegates), allDelegations
 
 
 def getDelegations(inputData, address):
-    logger.info("in getDelegations for: {}".format(address))
+    # logger.info("in getDelegations for: {}".format(address))
     delegations = []
     delegateAddresses = set()
     selfStake = 0
@@ -171,14 +188,14 @@ def getEpochInfo(session, stakingInfo):
         "nextEpochTime": nextEpochTime,
     }
 
-    logger.info(epochInfo)
+    # logger.info(epochInfo)
 
     return epochInfo
 
 
 def getStakingNetworkInfo(session, delegateCount):
     logger.info("getting staking information")
-    data = commonUtils.getHarmonyDataFromPost(session, "hmy_getStakingNetworkInfo", [])
+    data = commonUtils.getHarmonyDataFromPost(session, constants.STAKING_NETWORK_INFO, [])
 
     stakingData = data["result"]
 
@@ -192,17 +209,6 @@ def getStakingNetworkInfo(session, delegateCount):
     }
 
     return stakingInfo
-
-
-def getStatus(inputData):
-    if inputData == "currently elected":
-        return "Elected"
-    elif inputData == "eligible to be elected next epoch":
-        return "Eligible"
-    elif inputData == "not eligible to be elected next epoch":
-        return "NotEligible"
-
-    return "Unknown"
 
 
 def syncDelegations():
@@ -249,29 +255,29 @@ def processDelegations(allDelegations, dbDelegates):
             dbDelegate = dbDelegatesMap[key]
 
             if int(amount) != int(dbDelegate["stake"]) or int(reward) != int(dbDelegate["stake"]):
-                logger.info("there are changes in this address, sync it")
+                # logger.info("there are changes in this address, sync it")
                 d["hPoolId"] = dbDelegate["hPoolId"]
                 d["poolDelId"] = dbDelegate["poolDelId"]
                 updates.append(d)
-            else:
-                logger.info("no changes in this address, leave it as is")
+            # else:
+            # logger.info("no changes in this address, leave it as is")
 
             del dbDelegatesMap[key]
         else:
             inserts.append(d)
 
-    logger.info("updates are:")
-    logger.info(updates)
-
-    logger.info("inserts are:")
-    logger.info(inserts)
+    # logger.info("updates are:")
+    # logger.info(updates)
+    #
+    # logger.info("inserts are:")
+    # logger.info(inserts)
 
     deletes = []
     for d in dbDelegatesMap.values():
         deletes.append(d)
 
-    logger.info("deletes are:")
-    logger.info(deletes)
+    # logger.info("deletes are:")
+    # logger.info(deletes)
     return updates, inserts, deletes
 
 
@@ -311,10 +317,6 @@ def getMapFromList(listData):
         mapObj[keyValue] = item
 
     return mapObj
-
-
-if len(sys.argv) < 3:
-    raise Exception("correct syntax is: python harmonySync dev/prod logsPath val/del")
 
 
 if mode == MODE_VAL:

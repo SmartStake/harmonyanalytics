@@ -9,14 +9,18 @@ class HNetworkNav extends React.Component {
         <Table striped bordered hover variant="dark" >
           <thead>
             <tr>
-              <th><a className="white-a" href="/">Validators</a></th>
+              <th><a className="white-a" href="/stats">Network Stats</a></th>
+              <th><a className="white-a" href="/history">Network History</a></th>
               <th><a className="white-a" href="/networkEvents">Events</a></th>
-              <th><a className="white-a" href="/richlist">Richlist</a></th>
             </tr>
             <tr>
+              <th><a className="white-a" href="/richlist">Richlist</a></th>
               <th><a className="white-a" href="/calc">Calculator</a></th>
-              <th><a className="white-a" href="/stake">Network Stake</a></th>
-              <th>&nbsp;</th>
+              <th><a className="white-a" href="/election">Next Election</a></th>
+            </tr>
+            <tr>
+              <th><a className="white-a" href="/version">Version Stats</a></th>
+              <th><a className="white-a" href="/validators">Validators</a></th>
             </tr>
           </thead>
         </Table>

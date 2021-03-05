@@ -1,6 +1,9 @@
 import React from 'react';
 import {Button} from '@material-ui/core';
 import Alert from 'react-bootstrap/Alert';
+import numeral from 'numeral';
+import Breadcrumb from 'react-bootstrap/Breadcrumb';
+import ProgressBar from 'react-bootstrap/ProgressBar';
 
 import SPUtilities from '../util/SPUtilities';
 import RespUtils from '../util/RespUtils';
@@ -23,7 +26,20 @@ class HUtils extends React.Component {
       return 0;
     }
 
-    return (input1 * 100 /input2).toFixed(2) + "%";
+    return HUtils.getPercentValue(input1, input2) + "%";
+  }
+
+  static getPercentValue(input1, input2) {
+    // console.info("getStakeWeight - ", poolStake, totalStake);
+    if (input2 == undefined || input2 == 0) {
+      return "";
+    }
+
+    if (input1 == undefined || input1 == 0) {
+      return 0;
+    }
+
+    return (input1 * 100 /input2).toFixed(2);
   }
 
 
@@ -93,6 +109,7 @@ class HUtils extends React.Component {
       label = SPUtilities.addressLabelShortFormatter(cell, null, shortInd);
     }
 
+    // let link = "https://explorer.harmony.one/#/address/";  target="_blank"
     let link = "/address/";
 
     return (<span><a className="black-a"
@@ -124,6 +141,20 @@ class HUtils extends React.Component {
     // return HUtils.getNameLabel(cell);
   }
 
+  static nameFormatterNoLinkLimitSize(cell) {
+    if (!cell) {
+      return "";
+    }
+
+    let label = cell.split("?").join("");
+    if (RespUtils.isTabletView() && label != null && label.length > 15) {
+      label = label.substring(0, 15) + "...";
+    }
+
+    return label;
+    // return HUtils.getNameLabel(cell);
+  }
+
   static nameFormatter(cell, row) {
     if (!cell) {
       return "";
@@ -133,7 +164,16 @@ class HUtils extends React.Component {
 
     const onClick = e => e.stopPropagation();
     return (<span onClick={ onClick }><a className="black-a" href={"/val/" + row.hPoolId}
-      >{label}</a></span>);
+      >{label}</a>{HUtils.getPVA(row, 24)}</span>);
+  }
+
+  static getPVA(row, size) {
+    if (row.isPva === 'True') {
+      let imgSrc = "/images/pva.png"
+      return (<span title="Bootstrapped by Harmony's Pangea Validator Academy"> <img height={size} width={size} src={imgSrc} /></span>)
+    }
+
+    return "";
   }
 
   static nameFormatterShort(cell, row) {
@@ -149,7 +189,7 @@ class HUtils extends React.Component {
 
     const onClick = e => e.stopPropagation();
     return (<span onClick={ onClick }><a className="black-a" href={"/val/" + row.hPoolId}
-      >{label}</a></span>);
+      >{label}</a>{HUtils.getPVA(row, 16)}</span>);
   }
 
   static nameFormatterLong(cell, row) {
@@ -160,7 +200,7 @@ class HUtils extends React.Component {
     let label = cell.split("?").join("");
 
     return (<span><a className="black-a" href={"/val/" + row.hPoolId}
-      >{label}</a></span>);
+      >{label}</a>{HUtils.getPVA(row, 24)}</span>);
   }
 
   static replaceAll(value, search, replace) {
@@ -201,29 +241,76 @@ class HUtils extends React.Component {
   }
 
   static eriFormatter(cell, row, index, extra) {
-    if (row.status == 'Elected' && !cell) {
+    if (row.status === 'Elected' && !cell) {
       return "N/A";
+    } else if (!cell) {
+      return "";
     }
 
-    let color = "green";
-
-    if (!cell || cell < 0.8) {
-      color = "red";
-    } else if (cell > 0.95) {
+    let color = null;
+    if (row.status === 'Elected') {
       color = "green";
-    } else {
-      color = "orange";
+
+      if (!cell || cell < 0.8) {
+        color = "red";
+      } else if (cell > 0.95) {
+        color = "green";
+      } else {
+        color = "orange";
+      }
     }
 
     return HUtils.colorFormatter(cell, color);
   }
 
   static signPerFormatter(cell, row, index, extra) {
-    let color = "green";
+    if (row.status === 'Elected' && !cell) {
+      return "N/A";
+    } else if (!cell) {
+      return "";
+    }
+
+    let color = null;
+    if (row.status === 'Elected') {
+      color = "orange";
+
+      if (!cell || cell < 90) {
+        color = "red";
+      } else if (cell > 99) {
+        color = "green";
+      }
+    }
+
+    return <a class="regular-b-a" href={"/keys/" + row.hPoolId}>{HUtils.colorFormatter(cell, color)}</a>;
+  }
+
+  static calcSignPerAndFormat(lifetimeSigned, lifetimeToSign, hPoolId) {
+    let cell = HUtils.getPercentValue(lifetimeSigned, lifetimeToSign);
+    if (!cell) {
+      return "";
+    }
+
+    let color = "orange";
 
     if (!cell || cell < 90) {
       color = "red";
     } else if (cell > 99) {
+      color = "green";
+    }
+
+    return <a class="regular-b-a" href={"/keys/" + hPoolId}>{HUtils.colorFormatter(cell + "%", color)}</a>;
+  }
+
+  static signPerFormatterTitle(cell, row, index, extra) {
+    return <a class="black-a" href={"/keys/" + extra}>{cell}</a>;
+  }
+
+  static keySignPerFormatter(cell, row, index, extra) {
+    let color = "green";
+
+    if (!cell || cell < 0.97) {
+      color = "red";
+    } else if (cell > 0.98) {
       color = "green";
     } else {
       color = "orange";
@@ -237,10 +324,10 @@ class HUtils extends React.Component {
 
     if (!cell || cell == 'NotEligible') {
       color = "red";
-    } else if (cell == 'Elected') {
-      color = "green";
-    } else {
-      color = "orange";
+    // } else if (cell == 'Elected') {
+    //   color = "green";
+    // } else {
+    //   color = "green";
     }
 
     let value = cell;
@@ -253,6 +340,10 @@ class HUtils extends React.Component {
   }
 
   static colorFormatter(value, color) {
+    if (!color) {
+      return value;
+    }
+
     let size = "8";
     if (window.innerWidth > 1000) {
       size = 16;
@@ -265,14 +356,15 @@ class HUtils extends React.Component {
 
   static getHPoolId(thisObj) {
     var hPoolId = thisObj.props.match.params.hPoolId;
-    if (hPoolId === undefined) {
-      hPoolId = config.apiGateway.DEFAULT_POOL_ID;
-    }
+    // if (hPoolId === undefined) {
+    //   hPoolId = con fig.api Gate way.DEFAULT _POOL_ID;
+    // }
 
     return hPoolId;
   }
 
   static coinCountCellFormatter(cell, row) {
+    // console.log(typeof cell);
     if (!cell) {
       return cell;
     }
@@ -280,7 +372,7 @@ class HUtils extends React.Component {
     return SPCalc.formatCoinCount(cell.toFixed(0));
   }
 
-  static blsKeyFormatter(cell, row) {
+  static blsKeyCountFormatter(cell, row) {
     if (row.status == constants.notEligibleStatus || row.optimalBlsKeyCount == 0) {
       return cell;
     }
@@ -301,7 +393,7 @@ class HUtils extends React.Component {
   static convertPercentFormatter(cell, row) {
     if (!cell) {
       if (cell == 0) {
-        return (window.innerWidth > constants.MEDIUM) ? "0 %" : "0";
+        return (window.innerWidth > constants.MEDIUM) ? "0%" : "0";
       }
       return cell;
     }
@@ -315,7 +407,7 @@ class HUtils extends React.Component {
     }
 
     if (window.innerWidth > constants.MEDIUM) {
-      return value + " %";
+      return value + "%";
     }
 
     return value
@@ -324,7 +416,7 @@ class HUtils extends React.Component {
   static percentFormatter(cell, row) {
     if (!cell) {
       if (cell == 0) {
-        return (window.innerWidth > constants.MEDIUM) ? "0 %" : "0";
+        return (window.innerWidth > constants.MEDIUM) ? "0%" : "0";
       }
       return cell;
     }
@@ -337,7 +429,7 @@ class HUtils extends React.Component {
     }
 
     if (window.innerWidth > constants.MEDIUM) {
-      return value + " %";
+      return value + "%";
     }
 
     return value
@@ -353,7 +445,7 @@ class HUtils extends React.Component {
   }
 
   static logoFormatter(cell, row) {
-    let url = "images/logo/" + row.address + ".png";
+    let url = "images/logo/" + row.address + ".jpg";
     // let logoPath = cell;
     // if (row.type == 'SOLO') {
     //   url = null;
@@ -433,9 +525,8 @@ class HUtils extends React.Component {
           <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId}>All</a></td>
           <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/Delegate"}>Del</a></td>
           <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/Undelegate"}>Undel</a></td>
-          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/EditValidator"}>Validator</a></td>
-          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/Fee_Increase"}>Fee +</a></td>
-          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/Fee_Decrease"}>Fee -</a></td>
+          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/val"}>Val</a></td>
+          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/fee"}>Fee &#x00B1;</a></td>
           <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/large"}>Large</a></td>
         </tr></tbody></table></div>);
     } else {
@@ -443,26 +534,35 @@ class HUtils extends React.Component {
           <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId}>All</a></td>
           <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/Delegate"}>Delegate</a></td>
           <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/Undelegate"}>Undelegate</a></td>
-          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/EditValidator"}>EditValidator</a></td>
-          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/Fee_Increase"}>Fee Increase</a></td>
-          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/Fee_Decrease"}>Fee Decrease</a></td>
+          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/val"}>Validator Changes</a></td>
+          <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/fee"}>Fee Changes</a></td>
           <td className="view-tag"><a className="white-a" href={"/events/" + thisObj.state.val.hPoolId + "/large"}>Large</a></td>
         </tr></tbody></table></div>);
     }
   }
 
   static renderNetworkEventTypes() {
+    if (window.innerWidth < 1000) {
+      return (<div><table><tbody><tr>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents"}>All</a></td>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents/Delegate"}>Del</a></td>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents/Undelegate"}>Undel</a></td>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents/CollectRewards"}>Rewards</a></td>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents/val"}>Val</a></td>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents/fee"}>Fee &#x00B1;</a></td>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents/large"}>Large</a></td>
+        </tr></tbody></table></div>);
+    } else {
       return (<div><table><tbody><tr>
           <td className="view-tag"><a className="white-a" href={"/networkEvents"}>All</a></td>
           <td className="view-tag"><a className="white-a" href={"/networkEvents/Delegate"}>Delegate</a></td>
           <td className="view-tag"><a className="white-a" href={"/networkEvents/Undelegate"}>Undelegate</a></td>
           <td className="view-tag"><a className="white-a" href={"/networkEvents/CollectRewards"}>Rewards</a></td>
-          <td className="view-tag"><a className="white-a" href={"/networkEvents/EditValidator"}>EditValidator</a></td>
-          <td className="view-tag"><a className="white-a" href={"/networkEvents/Fee_Increase"}>Fee Increase</a></td>
-          <td className="view-tag"><a className="white-a" href={"/networkEvents/Fee_Decrease"}>Fee Decrease</a></td>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents/val"}>Validator Changes</a></td>
+          <td className="view-tag"><a className="white-a" href={"/networkEvents/fee"}>Fee Changes</a></td>
           <td className="view-tag"><a className="white-a" href={"/networkEvents/large"}>Large</a></td>
         </tr></tbody></table></div>);
-    // }
+    }
   }
 
   static getSmartStakeMsg(smartStakeInd) {
@@ -513,14 +613,160 @@ class HUtils extends React.Component {
     return (<span onClick={ onClick }><a href={"https://staking.harmony.one/validators/mainnet/" + cell}
       target="_blank"><button className="button-special" id={"Stake" + cell}
       >Stake</button></a></span>);
+    // return (<span onClick={ onClick }><a href={"https://staking.harmony.one/validators/mainnet/" + cell}
+    //   target="_blank"><Button variant="contained" color="primary" id={"Stake" + cell} size="small"
+    //   >Stake</Button></a></span>);
   }
 
   static stakeFormatterLarge(address) {
     return (<span><a href={"https://staking.harmony.one/validators/mainnet/" + address}
       target="_blank"><button className="button-special-large" id={"Stake" + address}
       >Stake</button></a></span>);
+    // return (<span onClick={ onClick }><a href={"https://staking.harmony.one/validators/mainnet/" + cell}
+    //   target="_blank"><Button variant="contained" color="primary" id={"Stake" + cell} size="small"
+    //   >Stake</Button></a></span>);
   }
 
+  static renderRewards() {
+    if (RespUtils.isTabletView()) {
+      return (<p><a href="/account" className="black-a">Rewards dashboard</a></p>);
+    }
+
+    return "";
+  }
+
+  static consensusStyleFormatter(cell, row, index, extra) {
+    if (!cell) return "";
+    if (row.status === 'NotEligible') {
+      return {"background-image": "linear-gradient(to right, rgb(245, 167, 30), #ffffff)"};
+    } else if (row.status === 'Elected') {
+      return {"background-image": "linear-gradient(to right, #00b4a0, #ffffff)"};
+    } else {
+      return {"background-image": "linear-gradient(to right, #00b4a0, #ffffff)"};
+    }
+  }
+
+  static slotFormatter(cell, row, index, extra) {
+    if (!cell) return "";
+
+    return row.slot;
+  }
+
+  static intFormatter(cell, row) {
+    if (!cell) return "";
+
+    return parseInt(cell);
+  }
+
+  static calcRewardRatio(cell, row, index, extra) {
+    if (!cell) return "";
+
+    // console.log("getRewardRatio(row.stake: ", row.stake, ", row.reward: ", row.reward, ", extra: ", extra);
+    return HUtils.getRewardRatio(row.stake, row.reward, extra);
+  }
+
+  static getRewardRatio(stake, reward, totals) {
+    if (stake === undefined || stake === 0) {
+      // console.log("1");
+      return "";
+    } else if (reward === undefined || reward === 0) {
+      // console.log("2");
+      return 0;
+    }
+
+    if (totals.stake === 0 || totals.reward === 0) {
+        // console.log("3");
+        return "";
+    }
+
+    let percentStake = stake * 100 /totals.stake;
+    let percentReward = reward * 100 /totals.reward;
+    // console.log("percentStake: ", percentStake, ", percentReward: ", percentReward);
+
+    if (percentReward === "" || percentReward === 0) {
+      // console.log("4");
+      return 0;
+    }
+
+    return numeral(percentReward/percentStake).format('0.00a');
+  }
+
+  static blsKeyFormatter(cell, row) {
+    return HUtils.blsKeyFormatterBySize(cell, row, true);
+  }
+
+  static blsKeyFormatterLarge(key, row) {
+    return HUtils.blsKeyFormatterBySize(key, row, RespUtils.isTabletView());
+  }
+
+  static blsKeyFormatterBySize(key, row, short) {
+    if (!key) {
+      return "";
+    }
+
+    let label = SPUtilities.addressLabelShortFormatter(key, null, short);
+    let link = "/key/";
+    let target = "";
+
+    return (<span><a className="black-a" target={target}
+      href={link + key + "/" + row.epochNumber}>{label}</a></span>);
+  }
+
+  // getValBreadCrumb() {
+  //   if (RespUtils.isTabletView()) {
+  //     return (
+  //       <Breadcrumb>
+  //         <Breadcrumb.Item href="/">Validators</Breadcrumb.Item>
+  //       </Breadcrumb>
+  //     );
+  //   } else {
+  //     return "";
+  //   }
+  // }
+
+  static getBreadCrumb() {
+    if (RespUtils.isTabletView()) {
+      return (
+        <Breadcrumb>
+          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+        </Breadcrumb>
+      );
+    } else {
+      return "";
+    }
+  }
+
+  static progressFormatter(cell, row) {
+    let value = cell;
+    let desc = "";
+
+    if (cell) {
+      // console.log((typeof cell), " - in percentFormatter: ", cell);
+      value = (cell).toFixed(2).replace(/[.,]00$/, "");
+    }
+
+    desc = "Stake weight: " + value + "%.<br/>";
+    var cumWeightFormatted = (row.cumulativeWeight).toFixed(2).replace(/[.,]00$/, "");
+    desc += "Cumulative weight: " + (cumWeightFormatted) + "%.<br/>";
+
+    if (window.innerWidth > constants.MEDIUM) {
+      value = value + "%" ;
+      // return <ProgressBar striped variant="warning" now={row.cumulativeWeight} label={<span className="progressStyle">{cell}</span>} />;
+    }
+
+    return (<span data-for="main" data-tip={desc} data-iscapture="true">{value}</span>);
+  }
+
+  static progressStyle(cell, row) {
+    let progress = row.cumulativeWeight;
+    let remainder = 100-progress;
+    // console.log(progress, " - ", remainder);//c2f0c2
+    // return {"backgroundImage": "linear-gradient(to right, #207cca 50%,#7db9e8 50%,#7db9e8 100%)"};
+    return {"background": "linear-gradient(to right, #9fdff9 " + progress + "%, #f0fafe " + progress + "%, #f0fafe 100%)"};
+    // return {"backgroundImage": "linear-gradient(to right, red " + progress + "%, grey " + remainder + "%, grey 100%)"};
+    // return {"background": "-linear-gradient(left, red `${progress}`%, white `${progress}`%);"};
+    // return {"backgroundImage": "linear-gradient(to right, " + color + ", #ffffff)"};
+  }
 }
 
 export default HUtils;

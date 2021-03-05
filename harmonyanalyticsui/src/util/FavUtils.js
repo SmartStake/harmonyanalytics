@@ -6,7 +6,7 @@ class FavUtils extends React.Component {
   static harmony = {"defaultView": "defaultView",
     "idField": "hPoolId",
     "favKey": "favPools",
-    "location": "/validators",
+    // "location": "/validators",
     // "stateDataObjName": "nodes",
   };
 
@@ -23,7 +23,8 @@ class FavUtils extends React.Component {
   }
 
   static getRedirectLocation() {
-    return FavUtils.harmony.location;
+    // return FavUtils.harmony.location;
+    return window.location;
   }
 
   static isFavourite(poolId) {
@@ -140,8 +141,12 @@ class FavUtils extends React.Component {
           newPoolData[newPoolData.length]=poolData[i];
         }
       }
+
+      if (newPoolData.length === 0) {
+        newPoolData = poolData;
+      }
       // console.log(newPoolData);
-      thisObj.setState({"pools": newPoolData});
+      // thisObj.setState({"pools": newPoolData});
     } else {
       // let newPoolData = [];
       let regularPoolData = [];
@@ -155,7 +160,7 @@ class FavUtils extends React.Component {
 
       newPoolData.push.apply(newPoolData, regularPoolData)
       // console.log(newPoolData);
-      thisObj.setState({"pools": newPoolData});
+      // thisObj.setState({"pools": newPoolData});
     }
 
     return newPoolData;

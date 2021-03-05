@@ -3,6 +3,8 @@ import {ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Label, Legend
 import {BarChart, Bar } from 'recharts';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import BootstrapTable from 'react-bootstrap-table-next';
+import ReactTooltip from 'react-tooltip';
+import InfoIcon from '@material-ui/icons/Info';
 
 import UIUtils from '../util/UIUtils';
 import Utilities from '../util/Utilities';
@@ -51,7 +53,7 @@ class StackedBarChart extends React.Component {
             <Legend />
             <CartesianGrid stroke="#eee" strokeDasharray="5 5"/>
             {showDataLabel && <Bar maxBarSize={50} dataKey={this.props.valueAttr} stackId="a" fill="#8884d8">
-                <LabelList dataKey={this.props.valueAttr} position="center" />
+                <LabelList dataKey={this.props.valueAttr} position="center" angle={-90} />
               </Bar>}
             {!showDataLabel && <Bar maxBarSize={50} dataKey={this.props.valueAttr} stackId="a" fill="#8884d8" /> }
 
@@ -68,8 +70,11 @@ class StackedBarChart extends React.Component {
   render () {
   	return (
       <div>
-        <b><span align="left">{this.props.title}</span></b>
-        <p>Data for the latest window (hour or date) is partial. All times are in GMT.</p>
+        <ReactTooltip id="main" place="top" type="dark" effect="float" multiline={true} />
+        <b><span align="left">{this.props.title}</span>
+          <span className="buttonWithText"><span data-for="main" data-tip={this.props.desc} data-iscapture="true"><InfoIcon color="action"/></span></span>
+        </b>
+        {this.showInfoMsg()}
         <p/>
         <div align="center">
           {this.props.showTotalLabel ? Utilities.getTotalWithLabel(this.props.data, this.props.valueAttr, this.props.totalLabel) : ""}.
@@ -78,6 +83,14 @@ class StackedBarChart extends React.Component {
         {ChartUtils.getLandscapeMsg()}
       </div>
     );
+  }
+
+  showInfoMsg() {
+    if (!this.props.hideInfoMsg || this.props.hideInfoMsg === false) {
+        return (<p>Data for the latest window (hour or date) is partial. All times are in GMT.</p>);
+    }
+
+    return "";
   }
 
   truncDate(val) {

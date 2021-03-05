@@ -13,13 +13,13 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
-    logger.info(event)
+    # logger.info(event)
     startTime = datetime.datetime.now()
     conn, app, error = securityUtils.performSecurityCheckAndGetDetails(event)
     if error:
         return error
 
-    logger.info(app)
+    # logger.info(app)
     body = json.loads(event["body"])
 
     createHealthCheck(app, body, conn)

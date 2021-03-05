@@ -3,6 +3,8 @@ import {ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Label } from 
 import {BarChart, Bar } from 'recharts';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import BootstrapTable from 'react-bootstrap-table-next';
+import ReactTooltip from 'react-tooltip';
+import InfoIcon from '@material-ui/icons/Info';
 
 import UIUtils from '../util/UIUtils';
 import Utilities from '../util/Utilities';
@@ -60,7 +62,10 @@ class BaseBarChart extends React.Component {
   render () {
   	return (
       <div>
-        <b><span align="left">{this.props.title}</span></b>
+        <ReactTooltip id="main" place="top" type="dark" effect="float" multiline={true} />
+        <b><span align="left">{this.props.title}</span>
+          <span className="buttonWithText"><span data-for="main" data-tip={this.props.desc} data-iscapture="true"><InfoIcon color="action"/></span></span>
+        </b>
         <p/>
         <div align="center">
           {this.props.showTotalLabel ? Utilities.getTotalWithLabel(this.props.data, this.props.valueAttr, this.props.totalLabel) : ""}.

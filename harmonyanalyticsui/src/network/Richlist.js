@@ -5,8 +5,9 @@ import {Button} from '@material-ui/core';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
 
+import UITableUtils from "../util/UITableUtils";
 import HNetworkNav from './HNetworkNav';
-
+import NetworkHeader from './NetworkHeader';
 import "./Richlist.css";
 import HUtils from '../harmony/HUtils';
 
@@ -98,6 +99,7 @@ class Richlist extends React.Component {
     }
 
     const options = UIUtils.getPageOptionsLarge(this);
+    let wrapperClasses = UITableUtils.isDefaultView() ? "table":"table-responsive";
 
     // const expandRow = {
     //   onlyOneExpanding: true,
@@ -111,12 +113,8 @@ class Richlist extends React.Component {
 
     return (
       <div>
-        <p/>
-        <h4 style={{align: "center"}}><span><strong>Harmony - Overall Richlist</strong></span>
-          <span className="buttonWithText"><img src="/images/reload.svg" onClick={this.reload} title="Reload Screen"
-            className="imgicon" width="32" height="32" /></span>
-        </h4>
-        <p>Top <b>{this.state.data.length}</b> addresses. Sync up happens every 1 hour. Want alias for any of the address? <a href="https://t.me/bigb4ever">Contact here</a> with the address and alias.</p>
+        <NetworkHeader title="Overall Richlist" />
+        <p>Top <b>{this.state.data.length}</b> addresses. Sync up happens every 3 hours. Want alias for any of the address? <a href="https://t.me/SmartStake">Contact here</a> with the address and alias.</p>
         <p><span className="buttonWithText"><Button variant="contained" color="primary" id="top200"
           onClick={ event => { window.location = "/richlist/200";}}
             >200</Button>&nbsp;<Button variant="contained" color="primary" id="top1000"
@@ -128,7 +126,8 @@ class Richlist extends React.Component {
         </span></p>&nbsp;
         <BootstrapTable keyField='address' data={ this.state.data } filter={ filterFactory() }
           columns={ columns } striped expandableRow={ () => { return true; } } options={options}
-          hover condensed noDataIndication="Table is Empty/Loading" pagination={ paginationFactory(options) }/>
+          hover condensed noDataIndication="Table is Empty/Loading" pagination={ paginationFactory(options) }
+          wrapperClasses={wrapperClasses}/>
         <HNetworkNav />
       </div>
     );

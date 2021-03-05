@@ -12,13 +12,12 @@ import tables
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-logger.info("in harmony delegation sync")
 
 app = constants.HARMONY
 
 
 def syncAddresses(conn, app, data, event):
-	logger.info("in harmony address sync")
+	# logger.info("in harmony address sync")
 	startTime = datetime.datetime.now()
 
 	updated = updateAddressHistory(conn)
@@ -31,11 +30,12 @@ def syncAddresses(conn, app, data, event):
 	inserts = data["inserts"]
 	updates = data["updates"]
 
-	logger.info("processing address inserts")
+	# logger.info("processing address inserts")
 	if inserts is not None:
 		# count = 0
 		insertArgs = []
 		for i in inserts:
+			# logger.info("inserting address: {}".format(i))
 			# , i["txCount"]
 			record = (i["address"], i["balance"])
 			insertArgs.append(record)
@@ -46,10 +46,11 @@ def syncAddresses(conn, app, data, event):
 		batchCreateAddress(conn, insertArgs)
 	conn.commit()
 
-	logger.info("processing address updates")
+	# logger.info("processing address updates")
 	if updates is not None:
 		updateArgs = []
 		for i in updates:
+			# logger.info("updating address: {}".format(i))
 			# logger.info(i)
 			# i["txCount"],
 			updateArgs.append((i["balance"], i["addressId"]))
@@ -58,7 +59,7 @@ def syncAddresses(conn, app, data, event):
 	conn.commit()
 
 	balanceIncludesStake = data["balanceIncludesStake"]
-	logger.info("balanceIncludesStake: {}".format(balanceIncludesStake))
+	# logger.info("balanceIncludesStake: {}".format(balanceIncludesStake))
 	updateBalances(conn, balanceIncludesStake)
 	conn.commit()
 
@@ -68,10 +69,9 @@ def syncAddresses(conn, app, data, event):
 	auditUtils.createEvent(conn, app, eventName.syncHarmonyAddresses)
 	auditUtils.audit(conn, app, event, eventName.syncHarmonyAddresses, "service", startTime)
 
-	logger.info("processing finished")
+	# logger.info("processing finished")
 
 
-# likely not in use
 def createAddress(conn, address, balance=0, txCount=0):
 	sql = "insert into " + tables.haddress
 	sql += " (address, addressBalance, txCount) "
@@ -86,7 +86,7 @@ def batchCreateAddress(conn, addresses):
 	# , txCount , %s
 
 	createdCount = conn.cursor().executemany(sql, addresses)
-	logger.info("address creation requested - {}, update performed - {}".format(len(addresses), createdCount))
+	# logger.info("address creation requested - {}, update performed - {}".format(len(addresses), createdCount))
 
 
 def batchUpdateAddress(conn, addresses):
@@ -94,9 +94,9 @@ def batchUpdateAddress(conn, addresses):
 	sql += " set addressBalance=%s "
 	sql += " where addressId=%s "
 	# , txCount=%s
-	logger.info(sql)
+	# logger.info(sql)
 	updatedCount = conn.cursor().executemany(sql, addresses)
-	logger.info("address update requested - {}, update performed - {}".format(len(addresses), updatedCount))
+	# logger.info("address update requested - {}, update performed - {}".format(len(addresses), updatedCount))
 
 
 def updateAddress(conn, addressId, balance=0, txCount=0):
@@ -108,24 +108,23 @@ def updateAddress(conn, addressId, balance=0, txCount=0):
 
 def updateRank(conn, count):
 	richlist = dbUtil.listResultsWithConn(harmonyData.getRichListSqlForRank(count), conn)
-	rank = 1
+	ranking = 1
 	
 	rankUpdateSql = "update " + tables.haddress 
-	rankUpdateSql += " set rank = %s where addressId=%s "
+	rankUpdateSql += " set ranking = %s where addressId=%s "
 
-	logger.info("starting updating rank")
 	updates = []
 	for a in richlist:
-		if a["rank"] != rank:
-			updates.append((rank, a["addressId"]))
+		if a["ranking"] != ranking:
+			updates.append((ranking, a["addressId"]))
 
-		# if rank % 100 == 0:
-		# 	conn.commit()
-		rank += 1
+		if len(updates) > 500:
+			logger.info("five hundred ranking updates are already identified. skipping further processing")
+			break
+		ranking += 1
 
 	if len(updates) > 0:
 		conn.cursor().executemany(rankUpdateSql, updates)
-	logger.info("after updating rank")
 
 
 def updateAddressHistory(conn):
@@ -134,19 +133,20 @@ def updateAddressHistory(conn):
 	syncStatus = commonUtils.getSyncStatus(conn, app, constants.H_ADDRESS_HISTORY_SYNC)
 	epoch = coinStat["currentEpoch"]
 
-	logger.info("addresses are synced till epoch: {}. checking with current epoch: {}".format(
-		syncStatus["syncedTillEpoch"], epoch))
+	# logger.info("addresses are synced till epoch: {}. checking with current epoch: {}".format(
+	# 	syncStatus["syncedTillEpoch"], epoch))
 
 	if syncStatus["syncedTillEpoch"] == epoch:
 		logger.info("skipping. addresses are already synced till current epoch: {}".format(syncStatus["syncedTillEpoch"]))
 		return False
 
+	logger.info("syncing address history")
 	sql = harmonyData.getRichListSql()
 	# logger.info(sql)
 	currentAddresses = dbUtil.listResultsWithConn(sql, conn, 10000000)
 	# logger.info(currentAddresses)
 
-	logger.info("processing address history")
+	# logger.info("processing address history")
 	inserts = []
 	for address in currentAddresses:
 		# logger.info("processing address history for: ".format(address["address"]))
@@ -156,16 +156,17 @@ def updateAddressHistory(conn):
 		inserts.append(record)
 
 	harmonyHistory.batchCreateHistory(conn, inserts)
-	logger.info("after processing address history")
+	# logger.info("after processing address history")
 
 	commonUtils.updateSyncStatus(conn, app, constants.H_ADDRESS_HISTORY_SYNC, None, epoch)
 	auditUtils.createEvent(conn, app, eventName.syncHarmonyAddressHistory)
+	logger.info("after syncing address history")
 	conn.commit()
 	return True
 
 
 def syncDelegates(conn, app, data, event):
-	logger.info("in harmony delegation sync")
+	# logger.info("in harmony delegation sync")
 	startTime = datetime.datetime.now()
 	# conn = dbUtil.getConnection()
 	# currentTime = datetime.datetime.now()
@@ -206,7 +207,7 @@ def updateBalances(conn, balanceIncludesStake):
 	sql += " set ad.totalStake=pd.totalStake, ad.totalRewards=pd.totalRewards "
 	# logger.info(sql)
 	adUpdated = conn.cursor().execute(sql)
-	logger.info("addresses updated (stake/rewards) are : {0}".format(adUpdated))
+	# logger.info("addresses updated (stake/rewards) are : {0}".format(adUpdated))
 
 	conn.commit()
 
@@ -242,11 +243,12 @@ def processDelegationInserts(conn, inserts):
 
 	insertRecords = []
 	for i in inserts:
+		if i["validator"] not in pools:
+			logger.info("the validator {} is not known. skipping event.".format(i["validator"]))
+			continue
+
 		if not harmonyData.isAlreadyExistingAddress(conn, i["address"]):
 			createAddress(conn, i["address"])
-
-		# if i["validator"] not in pools:
-		# 	continue
 
 		pool = pools[i["validator"]]
 		args = (pool["hPoolId"], i["address"], i["amount"], i["reward"])
@@ -257,7 +259,7 @@ def processDelegationInserts(conn, inserts):
 
 
 def processDelegationUpdates(conn, updates):
-	logger.info("in processDelegationUpdates for {} delegations".format(len(updates)))
+	# logger.info("in processDelegationUpdates for {} delegations".format(len(updates)))
 
 	updateArgs = []
 	for delegate in updates:
@@ -270,7 +272,7 @@ def processDelegationUpdates(conn, updates):
 
 def batchCreateDelegation(conn, delegations):
 	if len(delegations) == 0:
-		logger.info("nothing to process")
+		# logger.info("nothing to process")
 		return
 
 	sql = "insert into " + tables.hpooldel
@@ -278,13 +280,13 @@ def batchCreateDelegation(conn, delegations):
 	sql += " values(%s, %s, %s, %s) "
 
 	createdCount = conn.cursor().executemany(sql, delegations)
-	logger.info("delegations creation requested - {}, update performed - {}".format(
-		len(delegations), createdCount))
+	# logger.info("delegations creation requested - {}, update performed - {}".format(
+	# 	len(delegations), createdCount))
 
 
 def batchUpdateDelegation(conn, delegations):
 	if len(delegations) == 0:
-		logger.info("nothing to process")
+		# logger.info("nothing to process")
 		return
 
 	sql = "update " + tables.hpooldel
@@ -292,20 +294,20 @@ def batchUpdateDelegation(conn, delegations):
 	sql += " where poolDelId = %s"
 
 	updatedCount = conn.cursor().executemany(sql, delegations)
-	logger.info("delegations update requested - {}, update performed - {}".format(
-		len(delegations), updatedCount))
+	# logger.info("delegations update requested - {}, update performed - {}".format(
+	# 	len(delegations), updatedCount))
 
 
 def batchDeleteDelegation(conn, delegations):
 	if len(delegations) == 0:
-		logger.info("nothing to process")
+		# logger.info("nothing to process")
 		return
 
 	sql = "Delete from " + tables.hpooldel
 	sql += " where poolDelId = %s"
 
 	deletedCount = conn.cursor().executemany(sql, delegations)
-	logger.info("delegations delete requested - {}, update performed - {}".format(
-		len(delegations), deletedCount))
+	# logger.info("delegations delete requested - {}, update performed - {}".format(
+	# 	len(delegations), deletedCount))
 
 

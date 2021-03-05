@@ -21,12 +21,19 @@ custom:
   myStage: ${opt:stage, self:provider.stage}
   config: ${file(../haconfig.${opt:stage, self:provider.stage}.json)}
   myEnvironment:
+    ENV: ${self:custom.config.ENV}
     DB_SCHEMA_NAME: ${self:custom.config.DB_SCHEMA_NAME}
     DB_ENDPOINT: ${self:custom.config.DB_ENDPOINT}
+    DB_PORT: ${self:custom.config.DB_PORT}
     DB_USERNAME: ${self:custom.config.DB_USERNAME}
     DB_PASSWORD: ${self:custom.config.DB_PASSWORD}
     H_TELEGRAM_TOKEN: ${self:custom.config.H_TELEGRAM_TOKEN}
+    SECURITY_KEY_1: ${self:custom.config.SECURITY_KEY_1}
+    SECURITY_KEY_2: ${self:custom.config.SECURITY_KEY_2}
+    DEFAULT_POOL_ID: ${self:custom.config.DEFAULT_POOL_ID}
+    REGION: ${self:custom.config.REGION}
     SERVICE_NAME:
+      test: ha
       prod: ha
       dev: ha
 service: ${self:custom.myEnvironment.SERVICE_NAME.${self:custom.myStage}}
@@ -34,24 +41,40 @@ service: ${self:custom.myEnvironment.SERVICE_NAME.${self:custom.myStage}}
 provider:
   name: aws
   memorySize: 128
+  versionFunctions: false
   runtime: python3.6
   stage: dev
   environment:
+    ENV: ${self:custom.myEnvironment.ENV}
     DB_SCHEMA_NAME: ${self:custom.myEnvironment.DB_SCHEMA_NAME}
     DB_ENDPOINT: ${self:custom.myEnvironment.DB_ENDPOINT}
+    DB_PORT: ${self:custom.myEnvironment.DB_PORT}
     DB_USERNAME: ${self:custom.myEnvironment.DB_USERNAME}
     DB_PASSWORD: ${self:custom.myEnvironment.DB_PASSWORD}
     H_TELEGRAM_TOKEN: ${self:custom.myEnvironment.H_TELEGRAM_TOKEN}
-  region: us-east-1
+    SECURITY_KEY_1: ${self:custom.myEnvironment.SECURITY_KEY_1}
+    SECURITY_KEY_2: ${self:custom.myEnvironment.SECURITY_KEY_2}
+    DEFAULT_POOL_ID: ${self:custom.myEnvironment.DEFAULT_POOL_ID}
+  region: ${self:custom.myEnvironment.REGION}
 
 functions:
   listData:
     handler: listData.lambda_handler
     memorySize: 128
-    timeout: 20
+    timeout: 30
     events:
       - http:
           path: listData
+          method: get
+          cors:
+            origin: '*'
+  validators:
+    handler: validators.lambda_handler
+    memorySize: 128
+    timeout: 20
+    events:
+      - http:
+          path: validators
           method: get
           cors:
             origin: '*'
@@ -65,16 +88,47 @@ functions:
           method: post
           cors:
             origin: '*'
+  sendNotifications:
+    handler: hTgNotificationSync.lambda_handler
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: sendNotifications
+          method: post
+          cors:
+            origin: '*'
+  harmonyValSync:
+    handler: harmonyValSync.lambda_handler
+    memorySize: 256
+    timeout: 30
+    events:
+      - http:
+          path: harmonyValSync
+          method: post
+          cors:
+            origin: '*'
   hTgBot:
     handler: hTgBot.tgHandler
     memorySize: 128
-    timeout: 30
+    timeout: 10
     events:
       - http:
           path: hTgBot
           method: post
           cors:
             origin: '*'
+  temp:
+    handler: temp.lambda_handler
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: temp
+          method: post
+          cors:
+            origin: '*'
 
 plugins:
   - serverless-python-requirements
+  - serverless-openapi-documentation

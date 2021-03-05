@@ -1,7 +1,11 @@
 import React from 'react';
+import numeral from 'numeral';
+
+import RespUtils from './RespUtils'
 
 class SPCalc extends React.Component {
   static getStakeWeight(poolStake, totalStake) {
+    // console.info("getStakeWeight - ", poolStake, totalStake);
     if (totalStake == undefined || totalStake == 0) {
       return "";
     }
@@ -48,6 +52,14 @@ class SPCalc extends React.Component {
 
     return count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
+  // static formatCoinCount(count) {
+  //   if (count == undefined || count < 1000) {
+  //     return count;
+  //   }
+  //
+  //   return numeral(count).format('0[.]0000');
+  //   // return count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // }
 
   static calcNetARR(commission, avgBlockIndex, coinStat) {
     if (commission == undefined || avgBlockIndex == undefined || coinStat == undefined) {
@@ -127,11 +139,13 @@ class SPCalc extends React.Component {
     }
 
     if (cell < 5) {
-      return "Few minutes";
+      return RespUtils.isMobileView() ? "Few mins":"Few minutes";
     } else if (cell < 60) {
-      return SPCalc.getDesc(cell, "minute");
+      let unit = RespUtils.isMobileView() ? "min":"minute";
+      return SPCalc.getDesc(cell, unit);
     } else if (cell < 1440) {
-      return SPCalc.getDesc(cell, "hour", 60);
+      let unit = RespUtils.isMobileView() ? "hr":"hour";
+      return SPCalc.getDesc(cell, unit, 60);
     }
 
     return SPCalc.getDesc(cell, "day", 1440);

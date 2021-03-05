@@ -205,8 +205,8 @@ class UIUtils extends React.Component {
   }
 
   static renderPageActions(thisObj, fav, respSwitch) {
-    return (<span className="buttonWithText">{fav ? FavUtils.showFavSwitch() : ""}
-      {UIUtils.renderReload(thisObj)}{respSwitch ? UITableUtils.renderSwitchView(this) : ""}</span>);
+    return (<span className="buttonWithText">{fav ? FavUtils.showFavSwitch() : ""}&nbsp;
+      {UIUtils.renderReload(thisObj)}{respSwitch ? UITableUtils.renderSwitchView(thisObj) : ""}</span>);
   }
 
   static getUniqueValues(data, attribute) {
@@ -229,6 +229,13 @@ class UIUtils extends React.Component {
 
     // console.log("options are: " + attribute, " - ", options);
     return values;
+  }
+
+  static getTip(inputText) {
+    const chunks = inputText.match(/.{1,35}(\s|$)/g);
+    let tip = chunks.join('<br/>');
+
+    return tip;
   }
 }
 

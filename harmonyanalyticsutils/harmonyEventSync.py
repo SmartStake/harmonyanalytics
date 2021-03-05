@@ -6,7 +6,11 @@ from requests import Session
 
 import commonUtils
 import constants
+import harmonyNetworkUtils
 import logUtil
+
+if len(sys.argv) < 3:
+	raise Exception("correct syntax is: python harmonyEventsSync dev/prod logsPath")
 
 today = datetime.date.today()
 
@@ -18,7 +22,7 @@ def processEvents():
 	logger.info("starting processing")
 
 	startBlockHeight, endBlockHeight, more = commonUtils.getBlockHeightRange(
-		constants.eventSyncBlockHeightUrl, constants.MAX_LIMIT_EVENT_SYNC)
+		constants.eventSyncBlockHeightUrl, constants.EVENT_SYNC_MAX_LIMIT)
 
 	if startBlockHeight is None:
 		logger.info("starting block obtained is None. Exiting")
@@ -32,14 +36,14 @@ def processEvents():
 
 		# if len(allEvents) > 1:
 		# 	break
-		# logger.info("processing block: {}".format(blockNum))
+		logger.info("processing block: {}".format(blockNum))
 		index = 0
+		# logger.info("processing events transaction for block: {}, and index: {}, is: {}".format(blockNum, index, transaction))
 		while True and index < 1000:
 			transaction = commonUtils.getHarmonyResultDataFromPost(session, constants.STAKING_TRANSACTION_URL, [blockNum, index])
-
-			logger.info(str(attempts) + " - " + str(blockCount) + " transaction for block: {}, and index: {}, is: {}".format(blockNum, index, transaction))
+			# logger.info(str(attempts) + " - " + str(blockCount) + " transaction for block: {}, and index: {}, is: {}".format(blockNum, index, transaction))
 			if transaction:
-				event = processTransaction(session, transaction)
+				event = harmonyNetworkUtils.processStakingTransaction(session, transaction)
 				if event is not None:
 					allEvents.append(event)
 			else:
@@ -53,7 +57,7 @@ def processEvents():
 
 	reqDetails = {"type": "eventsSync", "blockHeight": endBlockHeight,
 				  "startBlockHeight": startBlockHeight, "events": allEvents,}
-	logger.info(reqDetails)
+	# logger.info(reqDetails)
 
 	commonUtils.postReq(constants.syncEventsUrl, reqDetails)
 
@@ -63,66 +67,6 @@ def processEvents():
 		logger.info(str(attempts) + " - starting new cycle")
 		processEvents()
 
-
-def processTransaction(session, transaction):
-	details = {"type": transaction["type"], "blockNumber": transaction["blockNumber"],
-		"epochTimestamp": transaction["timestamp"], "txHash": transaction["hash"]}
-
-	if transaction["type"] == constants.H_EVENT_DELEGATE or transaction["type"] == constants.H_EVENT_UNDELEGATE:
-		details["address"] = transaction["msg"]["delegatorAddress"]
-		details["validatorAddress"] = transaction["msg"]["validatorAddress"]
-		details["amount"] = commonUtils.getHarmonyCoins(transaction["msg"]["amount"])
-	elif transaction["type"] == constants.H_EVENT_COLLECT_REWARDS:
-		details["address"] = transaction["msg"]["delegatorAddress"]
-		amount = getAmountFromTransactionReceipt(session, transaction["hash"])
-		if amount is None:
-			return None
-		details["amount"] = amount
-	elif transaction["type"] == constants.H_EVENT_EDIT_VALIDATOR:
-		details["address"] = transaction["msg"]["validatorAddress"]
-		details["validatorAddress"] = transaction["msg"]["validatorAddress"]
-		details["msg"] = transaction["msg"]
-	else:
-		return None
-
-	logger.info("processed event is: {}".format(details))
-	return details
-
-
-def getAmountFromTransactionReceipt(session, txHash):
-	transactionReceipt = commonUtils.getHarmonyResultDataFromPost(session, constants.TRANSACTION_RECEIPT_URL, [txHash])
-	logger.info("transaction receipt for {}, is: {}".format(txHash, transactionReceipt))
-
-	if not transactionReceipt or "status" not in transactionReceipt:
-		logger.info(" transactionReceipt is None. not returning claim rewards amount")
-		return None
-
-	if transactionReceipt["status"] != 1:
-		logger.info(str(transactionReceipt["status"]) + " - status is not 1. not returning claim rewards amount")
-		return None
-
-	if len(transactionReceipt["logs"]) == 0:
-		logger.info("logs are empty. not returning claim rewards amount")
-		return None
-
-	data = transactionReceipt["logs"][0]["data"]
-
-	try:
-		intData = int(data, 16)
-		amount = commonUtils.getHarmonyCoins(intData)
-	except OverflowError:
-		logger.info("OverflowError - error occurred processing: {}".format(data))
-		return None
-	except ValueError:
-		logger.info("ValueError - error occurred processing: {}".format(data))
-		return None
-
-	logger.info("amount from - {} is: {}".format(data, amount))
-	return amount
-
-
-if len(sys.argv) < 2:
-	raise Exception("correct syntax is: python harmonyEventsSync dev/prod logsPath")
 
 startTime = int(time.time())
 processEvents()

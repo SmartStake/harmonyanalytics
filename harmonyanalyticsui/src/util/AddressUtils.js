@@ -80,12 +80,24 @@ class AddressUtils extends React.Component {
   }
 
   static copyLink(address) {
+    // let widthNHeight = 16;
+    // if (window.innerWidth < 600) {
+    //   widthNHeight = 16;
+    // }
 
     let imgSrc = "/images/copy.png";
     let title = "Copy address to clipboard"
+    // console.log("copied: ", formatExtraData.state.copied);
+    // if (row.address == formatExtraData.state.copied) {
+    //   imgSrc = "/images/check-circle-outline.png";
+    //   title = "Copied address to clipboard"
+    // }
 
     return (<CopyToClipboard text={address}
         onCopy={() => {
+          // formatExtraData.setState({copied: row.address});
+          // console.log(row.address);
+          // return false;
         }}>
         <img src={imgSrc} title={title}
           className="imgicon" width={16} height={16} />
@@ -135,7 +147,7 @@ class AddressUtils extends React.Component {
   }
 
   static getAliasOrAddress(address) {
-    // console.log("input is:", address);
+    console.log("input is:", address);
     if (!address) {
         return "";
     }
@@ -145,18 +157,6 @@ class AddressUtils extends React.Component {
     }
 
     return AddressUtils.addressFormatterSimple(address.address);
-  }
-
-  static getBreadCrumb() {
-    if (RespUtils.isTabletView()) {
-      return (
-        <Breadcrumb>
-          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
-        </Breadcrumb>
-      );
-    } else {
-      return "";
-    }
   }
 
 }

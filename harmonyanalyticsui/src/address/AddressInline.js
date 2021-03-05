@@ -7,6 +7,7 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import {ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Label } from 'recharts';
 import {BarChart, Bar } from 'recharts';
 
+import tooltips from "../tooltips";
 import SPCalc from '../util/SPCalc';
 import ApiUtils from '../util/ApiUtils';
 import UIUtils from '../util/UIUtils';
@@ -18,7 +19,6 @@ import EventsInline from "../harmony/EventsInline";
 import CurrentRewards from './CurrentRewards';
 import HUtils from '../harmony/HUtils';
 
-import BaseLineChart from '../reports/BaseLineChart';
 import BaseBarChart from '../reports/BaseBarChart';
 
 class AddressInline extends React.Component {
@@ -69,7 +69,7 @@ class AddressInline extends React.Component {
           </tr>
           <tr>
             <th>Richlist Rank: </th>
-            <td> {this.props.addressDetails.rank}</td>
+            <td> {this.props.addressDetails.ranking}</td>
           </tr>
           <tr>
             <th>Total Coins: </th>
@@ -99,6 +99,7 @@ class AddressInline extends React.Component {
         </Table>
         <p/>
         <Button onClick={() => {document.location = "/rewards/" + this.props.addressDetails.address}} variant="contained" color="default" id="rewardsHistory" size="small">Rewards Details</Button>
+        &nbsp;&nbsp;&nbsp;<Button onClick={() => {document.location = "/addressEvents/" + this.props.addressDetails.address}} variant="contained" color="default" id="rewardsHistory" size="small">Events</Button>
         &nbsp;&nbsp;&nbsp;{HUtils.addressLink(this.props.addressDetails.address)}
         {this.props.delegations.length > 0 && this.props.addressDetails.totalStake > 0 && this.renderRewardsSection()}
         <p/>
@@ -113,18 +114,17 @@ class AddressInline extends React.Component {
     document.location = "/rewards/" + this.props.addressDetails.address;
   }
 
-
   renderStakeHistory() {
     return (<div>
         <hr/>
         <p/>
         <p><b>Stake History Summary</b></p>
-        <BaseBarChart xAxis="Epoch" yAxis="Stake"
+        <BaseBarChart xAxis="Epoch" yAxis="Stake" desc={tooltips.address.stakeHistory}
           showVerticalLabel={true} valueAttr="totalStake" showTotalLabel={false}
           data={this.props.stakeHistory} xAxisValueAttr="epoch" />
 
         <p><b>Rewards Summary (Epoch Ending)</b></p>
-        <BaseBarChart xAxis="Epoch" yAxis="Rewards"
+        <BaseBarChart xAxis="Epoch" yAxis="Rewards" desc={tooltips.address.rewardsSummary}
           showVerticalLabel={true} valueAttr="totalReward" showTotalLabel={false}
           data={this.props.stakeHistory} xAxisValueAttr="epoch" />
 
@@ -162,18 +162,24 @@ class AddressInline extends React.Component {
       <div>
         <p><b>Stake History (Epoch Ending)</b></p>
         <BootstrapTable keyField='epoch' data={ this.props.stakeHistory } defaultSorted={defaultSorted}
-          columns={ columns } striped hover condensed noDataIndication="No data"/>
+           desc={tooltips.address.stakeHistory} columns={ columns } striped hover condensed noDataIndication="No data"/>
       </div>
     );
   }
 
+  // <p style={{align: "center"}}><span><strong>Daily stake history for address</strong></span></p>
+  // {this.renderBar(this.props.stakeHistory, "Date", "Stake", "stake")}
+  // <p/>
+  // <p style={{align: "center"}}><span><strong>Daily reward balance history for address</strong></span></p>
+  // {this.renderLine(this.props.stakeHistory, "Date", "Reward", "reward")}
+  // {this.renderRewardComparison()}
   renderEvents() {
     return (
       <div>
         <p/>
         <hr/>
         <p><b>Recent Events</b></p>
-        <EventsInline data={this.props.events} showValName={true} />
+        <EventsInline data={this.props.events} showValName={true} context="address"/>
       </div>
     )
   }

@@ -6,6 +6,7 @@
   "devDependencies": {
     "serverless": "^1.78.1",
     "serverless-configuration": "^1.0.0",
+    "serverless-openapi-documentation": "^0.4.0",
     "serverless-python-requirements": "^5.1.0"
   }
 }

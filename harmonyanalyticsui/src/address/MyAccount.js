@@ -5,6 +5,7 @@ import Utilities from "../util/Utilities";
 import SPUtilities from "../util/SPUtilities";
 import UIUtils from "../util/UIUtils";
 import AddressUtils from "../util/AddressUtils";
+import HUtils from "../harmony/HUtils";
 
 import ErrorMessageBox from "../components/ErrorMessageBox";
 import CollapsibleNote from "../base/CollapsibleNote";
@@ -158,15 +159,17 @@ class MyAccount extends React.Component {
       return <div>Loading</div>;
     }
 
-    return (<div>
-        {AddressUtils.getBreadCrumb()}
+    let lastUpdated = this.state.lastUpdatedGap ? (this.state.lastUpdatedGap/60).toFixed(0) : "N/A";
+    // {SPUtilities.getLastUpdatedGap(this.state.lastUpdatedGap)}
 
+    return (<div>
+        {HUtils.getBreadCrumb()}
         {this.state.error != null && (<ErrorMessageBox message={this.state.error} />)}
         <FilterAddress filterData={this.filterData} filterState={this.state.filterState}
           onAddressSelect ={this.onAddressSelect} saveAlias ={this.saveAlias}
           onAliasChange ={this.onAliasChange} showFilter={this.state.showFilter} switchFilter={this.switchFilter} />
         {this.addView()}
-        {SPUtilities.getLastUpdatedGap(this.state.lastUpdatedGap)}
+        <p>Last updated - <b>{lastUpdated}</b> minutes ago. Try our telegram bot <a target="_blank" class="black-a" href="https://t.me/HarmonyAnalyticsBot">HarmonyAnalyticsBot</a></p>
         {!this.state.addressDetails && (<p><br/><b><span>No address found</span></b></p>)}
         {this.state.addressDetails && (<AddressInline addressDetails={this.state.addressDetails} delegations={this.state.delegations}
           lastUpdatedGap={this.state.lastUpdatedGap} events={this.state.events} stakeHistory={this.state.stakeHistory}

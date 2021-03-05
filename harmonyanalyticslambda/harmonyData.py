@@ -7,10 +7,14 @@ import constants
 import dbUtil
 import eventName
 import getHealthSummary
+import hConstants
 import harmonyAddress
+import harmonyBlsKeys
 import harmonyEvents
 import harmonyHistory
 import harmonyRewards
+import harmonyShard
+import harmonyVersionSync
 import paramUtils
 import tables
 
@@ -36,8 +40,15 @@ def listHData(conn, app, event, context, startTime, dataType):
 			status = event["queryStringParameters"]["status"]
 		data = listHPools(conn, app, status)
 		auditUtils.audit(conn, app, event, "listData_" + dataType, "get", startTime)
+	elif dataType == "listPoolsSummary":
+		data = listPoolsSummary(conn, app)
 	elif dataType == "event":
 		data = getEventDetails(conn, event)
+	elif dataType == "keys":
+		hPoolId = getHPoolId(event)
+		data = harmonyBlsKeys.listKeys(conn, app, event, hPoolId)
+	elif dataType == "key":
+		data = harmonyBlsKeys.listKeyDetails(conn, app, event)
 	elif dataType == "listApr":
 		data = listHPoolsApr(conn, app)
 	elif dataType == "getPool":
@@ -60,6 +71,12 @@ def listHData(conn, app, event, context, startTime, dataType):
 		data = harmonyAddress.listAllAddresses(conn, app)
 	elif dataType == "listAllAddressesBasic":
 		data = harmonyAddress.listAllAddressesBasic(conn, app)
+	elif dataType == "blsKeySyncDetails":
+		data = harmonyBlsKeys.listBlsKeySyncDetails(conn, app)
+	elif dataType == "listAllValidatorsBasic":
+		data = listAllValidatorsBasic(conn)
+	elif dataType == "listDataForEpochSign":
+		data = listDataForEpochSign(conn, app)
 	elif dataType == "richlist":
 		count = 200
 		if "count" in event["queryStringParameters"]:
@@ -82,9 +99,17 @@ def listHData(conn, app, event, context, startTime, dataType):
 		data = harmonyHistory.listAddressHistory(conn, app, event)
 	elif dataType == "valPerf":
 		hPoolId = getHPoolId(event)
-		data = listPerf(conn, app, hPoolId)
-	elif dataType == "networkStake":
-		data = listNetworkStake(conn, app)
+		more = False
+		if "showMore" in event["queryStringParameters"]:
+			# logger.info(event["queryStringParameters"])
+			more = event["queryStringParameters"]["showMore"]
+		data = listPerf(conn, app, hPoolId, more)
+	elif dataType == "networkHistory":
+		data = harmonyHistory.listNetworkHistory(conn, app)
+	elif dataType == "versionStats":
+		data = harmonyVersionSync.listVersionStats(conn)
+	elif dataType == "networkStats":
+		data = harmonyHistory.listNetworkStats(conn, app)
 	elif dataType == "addressDetails":
 		alias, address, subType = None, None, None
 		if "address" in event["queryStringParameters"]:
@@ -99,8 +124,24 @@ def listHData(conn, app, event, context, startTime, dataType):
 	elif dataType == "events":
 		hPoolId = paramUtils.getOptionalIntParam(event, "hPoolId")
 		data = harmonyEvents.listEvents(conn, app, event, hPoolId, startTime)
+	elif dataType == "addressEvents":
+		address = None
+		if "address" in event["queryStringParameters"]:
+			address = event["queryStringParameters"]["address"]
+		data = harmonyAddress.listAddressEvents(conn, app, address)
+	elif dataType == "coinStat":
+		data = getCoinStat(conn, app)
+	elif dataType == "shardSyncDetails":
+		data = harmonyShard.getShardSyncInputDetails(conn)
+	elif dataType == "valKeys":
+		data = harmonyBlsKeys.listValKeys(conn)
+
 
 	return data
+
+
+def getCoinStat(conn, app):
+	return dbUtil.getSingleRecordResponseWithConn(commonUtils.getCoinStatSql(), conn, app)
 
 
 def listAllDelegates(conn, app):
@@ -121,7 +162,7 @@ def getPerfChartData(conn, hPoolId, hourly, mode, more):
 	else:
 		dateColumn = "date_format(syncTime,'%%Y-%%m-%%d')"
 
-	sql = "select " + dateColumn + " as title, signed, askedToSign, "
+	sql = "select " + dateColumn + " as title, epochNumber, signed, askedToSign, "
 	sql += " (askedToSign - signed) as notSigned, signPer, rewards "
 	sql += " from " + tables.hpoolperf
 	sql += " where hPoolId=%s "
@@ -129,7 +170,7 @@ def getPerfChartData(conn, hPoolId, hourly, mode, more):
 
 	dt = datetime.datetime.now().replace(minute=0, second=0, microsecond=0)
 	if hourly:
-		maxHours = 24
+		maxHours = 10
 		if more == 'true':
 			maxHours = 240
 
@@ -148,10 +189,10 @@ def getPerfChartData(conn, hPoolId, hourly, mode, more):
 	return dbUtil.listResultsWithConn(sql, conn, (hPoolId, mode))
 
 
-def getEpochChartData(conn, hPoolId, more):
+def getEpochChartData(conn, hPoolId, more, currentEpoch):
 	maxEpochs = 10
 	if more == 'true':
-		maxEpochs = 30
+		maxEpochs = 90
 
 	sql = "select epochNumber as title, signed, askedToSign, "
 	sql += " (askedToSign - signed) as notSigned, signPer, rewards "
@@ -160,24 +201,36 @@ def getEpochChartData(conn, hPoolId, more):
 	sql += " and mode = %s "
 
 	dt = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-	oldestTime = (dt - datetime.timedelta(days=maxEpochs))
-	sql += " and syncTime >= '" + str(oldestTime) + "'"
+	# oldestTime = (dt - datetime.timedelta(days=maxEpochs))
+	# sql += " and syncTime >= '" + str(oldestTime) + "'"
+	sql += " and epochNumber > %s "
+
 
 	sql += " order by 1 "
 
 	# logger.info(sql)
 
-	return dbUtil.listResultsWithConn(sql, conn, (hPoolId, constants.H_EPOCH_MODE))
+	return dbUtil.listResultsWithConn(sql, conn, (hPoolId, constants.H_EPOCH_MODE, (currentEpoch - maxEpochs)))
 
 
 def getHPool(conn, app, hPoolId, more):
-	validator = getHPoolById(conn, hPoolId)
-	hourlyChartData = getPerfChartData(conn, hPoolId, True, constants.H_HOUR_MODE, more)
-	dailyChartData = getEpochChartData(conn, hPoolId, more)
+	startTime = commonUtils.getCurrentTime()
 	coinStat = commonUtils.getCoinStat(conn, app)
-	events = harmonyEvents.listEventsByPoolId(conn, hPoolId)
+	commonUtils.logTimeDiff(startTime, "after getting coinStat:")
+	validator = getHPoolById(conn, hPoolId)
+	commonUtils.logTimeDiff(startTime, "after getting validator details:")
+
+	hourlyChartData = getPerfChartData(conn, hPoolId, True, constants.H_HOUR_MODE, more)
+	commonUtils.logTimeDiff(startTime, "after getting hourlyChartData:")
+	dailyChartData = getEpochChartData(conn, hPoolId, more, coinStat["currentEpoch"])
+	commonUtils.logTimeDiff(startTime, "after getting dailyChartData:")
+
+	# events = harmonyEvents.listEventsByPoolId(conn, hPoolId, 10)
+	events = []
+	commonUtils.logTimeDiff(startTime, "after getting events:")
 
 	notification = commonUtils.getNotification(conn, app, hPoolId)
+	commonUtils.logTimeDiff(startTime, "after getting notifications:")
 	# logger.info(notification)
 	return dbUtil.combineResults6("val", validator, "hourlyChartData", hourlyChartData,
 								  "dailyChartData", dailyChartData, "notification", notification,
@@ -238,13 +291,18 @@ def getFeeIncreaseCount(conn):
 
 
 def listHPoolsApr(conn, app):
-	sql = " select hPoolId as code, name as description, lifetimeApr, fee "
+	sql = " select hPoolId as code, "
+	sql += " concat(trim(replace(left(name, 29), '?','')), ' - ', status, ' - ', "
+	sql += " (case when avgApr is null then 0 else avgApr end)) as description, "
+	sql += " avgApr, avgNetApr, (fee * 100) as fee "
 	sql += " from " + tables.hpool + " p "
-
-	data = dbUtil.listResultsWithConn(sql, conn)
+	sql += " where status != %s "
+	sql += " having description is not null "
+	sql += " order by description "
+	# logger.info(sql)
+	data = dbUtil.listResultsWithConn(sql, conn, hConstants.H_NOT_ELIGIBLE)
 
 	coinStat = commonUtils.getCoinStat(conn, app)
-
 	return dbUtil.combineResults2("data", data, "coinStat", coinStat)
 
 
@@ -263,14 +321,19 @@ def listHPoolPerfByEpoch(conn, app, epochNumber, mode):
 	sql += " where p.epochNumber =%s and mode=%s "
 
 	# logger.info(sql)
+	startTime = commonUtils.getCurrentTime()
 	data = dbUtil.listResultsWithConn(sql, conn, (epochNumber, mode))
+	commonUtils.logTimeDiff(startTime, "after processing listHPoolPerfByEpoch")
 
 	return data
 
 
 def listHPoolPerfByEpochRange(conn, app, startEpochNumber, endEpochNumber, mode):
 	sql = " select hPoolId, avg(apr) as avgApr, count(*) as epochsPresent, "
-	sql += " min(epochNumber) as oldestEpoch, avg(eri) as avgEri "
+	sql += " min(epochNumber) as oldestEpoch, avg(eri) as avgEri, "
+	sql += " sum(signed) as avgSigned, sum(askedToSign) as avgToSign, "
+	sql += " round(sum(signed)*100/sum(askedToSign),2) as avgSignPer, "
+	sql += " count(case when elected='True' then 1 else null end) as timesElected "
 	sql += " from " + tables.hpoolperf + " p "
 	sql += " where p.epochNumber between %s and %s and mode=%s "
 	sql += " group by hPoolId "
@@ -352,10 +415,10 @@ def isAlreadyExistingAddress(conn, address):
 
 
 def getRichListSqlForRank(count):
-	sql = " select address, rank, addressId, "
+	sql = " select address, ranking, addressId, "
 	sql += " round(totalBalance,0) as totalBalance "
 	sql += " from " + tables.haddress
-	sql += " where totalBalance > " + MIN_AMOUNT
+	# sql += " where totalBalance > " + MIN_AMOUNT
 	sql += " order by totalBalance desc "
 	sql += " limit " + str(count)
 
@@ -365,7 +428,7 @@ def getRichListSqlForRank(count):
 
 
 def getRichListSql():
-	sql = " select address, alias, rank, addressId, round(totalStake,0)  as totalStake, "
+	sql = " select address, alias, ranking, addressId, round(totalStake,0)  as totalStake, "
 	sql += " (case when (totalBalance - totalStake >= 0) then round(totalBalance - totalStake) else 0 end) as addressBalance, "
 	sql += " round(totalBalance,0) as totalBalance, totalRewards, "
 	sql += " (Case when alias is null then address else alias end) as label "
@@ -394,7 +457,7 @@ def getRichList(conn, app, count):
 
 
 def listDelegates(conn, app, hPoolId):
-	sql = " select ad.rank, p.name, pd.address, round(pd.stake,0) as stake, round(reward,0) as reward "
+	sql = " select ad.ranking, p.name, pd.address, round(pd.stake,0) as stake, round(reward,0) as reward "
 	sql += " from " + tables.hpool + " p "
 	sql += " inner join " + tables.hpooldel + " pd on pd.hPoolId=p.hPoolId"
 	sql += " inner join " + tables.haddress + " ad on ad.address=pd.address"
@@ -411,7 +474,7 @@ def listDelegates(conn, app, hPoolId):
 
 
 def getRichDelegates(conn, app):
-	sql = " select ad.rank, pd.address, round(sum(pd.stake),0) as totalStake,  "
+	sql = " select ad.ranking, pd.address, round(sum(pd.stake),0) as totalStake,  "
 	sql += " group_concat(p.name) as validators "
 	sql += " from " + tables.hpool + " p "
 	sql += " inner join " + tables.hpooldel + " pd on pd.hPoolId=p.hPoolId"
@@ -431,34 +494,29 @@ def getRichDelegates(conn, app):
 								  "coinStat", coinStat)
 
 
-def listPerf(conn, app, hPoolId):
+def listPerf(conn, app, hPoolId, more):
 	sql = "SELECT epochNumber as title, eri, apr as er, netApr as netEr, 1 as average, "
 	sql += " blsKeyCount, uniqueDelegates, round(totalStaked) as totalStaked, "
 	sql += " round(totalStaked/1000000, 3) as totalStakeInMillions, "
 	sql += " round(selfStake) as selfStake, round(bidPerSeat) as bidPerSeat, fee, elected "
 	sql += " from " + tables.hpoolperf
 	sql += " where hPoolId=%s and mode='EPOCH'"
-	sql += " order by epochNumber"
+	sql += " order by epochNumber desc limit %s "
 	# logger.info(sql)
 
-	perfData = dbUtil.listResultsWithConn(sql, conn, hPoolId)
+	limit = 30
+	if more == 'true':
+		limit = 365
+
+	perfData = dbUtil.listResultsWithConn(sql, conn, (hPoolId, limit))
+	# perfData = sorted(perfData, key=lambda x: x.title)
+	# perfData.sort(key=lambda x: x.title)
+	perfData.sort(key=lambda item:item['title'], reverse=False)
+
 	validator = getHPoolById(conn, hPoolId)
 	notification = commonUtils.getNotification(conn, app, hPoolId)
 	return dbUtil.combineResults3("val", validator, "perfData", perfData,
 								  "notification", notification)
-
-
-def listNetworkStake(conn, app):
-	sql = "select epochNumber as title, "
-	sql += " round(sum(totalStaked)/1000000, 3) as totalStakeInMillions "
-	sql += " from " + tables.hpoolperf
-	sql += " where mode='EPOCH' "
-	sql += " group by epochNumber order by epochNumber "
-	logger.info(sql)
-
-	data = dbUtil.listResultsWithConn(sql, conn)
-	coinStat = commonUtils.getCoinStat(conn, app)
-	return dbUtil.combineResults2("data", data, "coinStat", coinStat)
 
 
 def getEventDetails(conn, event):
@@ -466,4 +524,46 @@ def getEventDetails(conn, event):
 
 	# logger.info(value)
 	return dbUtil.getSingleRecordResponseWithConn(commonUtils.getEventSql(), conn, value)
+
+
+def listPoolsSummary(conn, app):
+	sql, args = listHPoolsSql(None)
+	# logger.info(args)
+	data = dbUtil.listResultsWithConn(sql, conn, args)
+	# logger.info(data)
+	coinStat = commonUtils.getCoinStat(conn, app)
+	return dbUtil.combineResults2("data", data, "coinStat", coinStat)
+
+
+def listAllValidatorsBasic(conn):
+	sql, args = listHPoolsSql(None)
+	# logger.info(args)
+	data = dbUtil.listResultsWithResponseWithConn(sql, conn)
+	return data
+
+
+def listDataForEpochSign(conn, app):
+	sql, args = listHPoolsSql(None)
+	# logger.info(args)
+	data = dbUtil.listResultsWithConn(sql, conn)
+	syncStatus = commonUtils.getSyncStatus(conn, app, constants.SYNC_STATUS_EPOCH_FOR_SIGN)
+	epoch = syncStatus["syncedTillEpoch"]
+	return dbUtil.combineResults2("validators", data, "epoch", epoch)
+
+
+def listAllValidators(conn):
+	sql, args = listHPoolsSql(None)
+	# logger.info(args)
+	data = dbUtil.listResultsWithConn(sql, conn)
+	return data
+
+
+def listAllUnelectedValidators(conn):
+	sql = " select p.* "
+	sql += " from " + tables.hpool + " p "
+	sql += " where isEverElected='True' and status != 'Elected' "
+	# logger.info(args)
+	data = dbUtil.listResultsWithConn(sql, conn)
+	return data
+
 

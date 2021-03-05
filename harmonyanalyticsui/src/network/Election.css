@@ -1,0 +1,42 @@
+.seats-under {
+	margin-top: 5px;
+	margin-bottom: 5px;
+  margin-left: 1px;
+  margin-right: 1px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.seats-under {
+  background-color: #ccffcc;
+	margin-top: 5px;
+	margin-bottom: 5px;
+  margin-left: 1px;
+  margin-right: 1px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.seats-over {
+  background-color: #ff9999;
+  margin-top: 5px;
+	margin-bottom: 5px;
+  margin-left: 1px;
+  margin-right: 1px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.highlight-change {
+  background-color: #ff9999;
+}
+
+.highlight-default {
+  background-color: #ffffff;
+}

@@ -27,3 +27,6 @@
    background-color: #ECEFF1;
    color: white;
  } */
+ .react-bootstrap-table table {
+   table-layout: auto;
+ }

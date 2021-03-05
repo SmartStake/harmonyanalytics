@@ -4,6 +4,7 @@ import ApiUtils from '../util/ApiUtils';
 import HNetworkNav from './HNetworkNav';
 import EventsInline from '../harmony/EventsInline';
 
+import NetworkHeader from './NetworkHeader';
 import Utilities from "../util/Utilities";
 import SPUtilities from "../util/SPUtilities";
 import UIUtils from "../util/UIUtils";
@@ -58,17 +59,13 @@ class NetworkEvents extends React.Component {
 
     return (
       <div>
-        <p/>
-        <h4 style={{align: "center"}}><span><strong>Network Events</strong></span>
-          <span className="buttonWithText">{UIUtils.renderReload(this)}</span>
-        </h4>
+        <NetworkHeader title="Network Events" />
         {HUtils.renderNetworkEventTypes()}
-        <EventsInline data={this.state.data} isWidget={false} showValName={true} />
+        <EventsInline pageSize="50" data={this.state.data} isWidget={false} showValName={true} context="network"/>
         <HNetworkNav />
       </div>
     );
   }
-  // {UIUtils.renderNetworkEventTypes()}
 
 }
 

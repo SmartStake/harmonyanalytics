@@ -10,11 +10,9 @@ import config from './config';
 Amplify.configure({
 	API: {
 		endpoints: [
-			{
-				name: 'stakingService',
-				endpoint: config.apiGateway.URL,
-				region: config.apiGateway.REGION
-			}
+			{name: 'mainnet', endpoint: config.apiGatewayMainnet.URL, region: config.apiGatewayMainnet.REGION},
+			{name: 'testnet', endpoint: config.apiGatewayTestnet.URL, region: config.apiGatewayTestnet.REGION},
+			{name: 'devnet', endpoint: config.apiGatewayDevnet.URL, region: config.apiGatewayDevnet.REGION},
 		]
 	}
 });

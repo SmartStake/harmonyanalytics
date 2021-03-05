@@ -67,6 +67,35 @@ class SPUtilities extends React.Component {
         : Number(Math.abs(Number(amount))).toFixed(decimals);
   }
 
+  static formatDivBy18(cell, row) {
+    if (!cell) {
+      return cell;
+    }
+
+    // return SPUtilities.moneyFormatterPrecision(cell, 3);
+    let value = cell / Math.pow(10, 18);
+    // console.log(value, " - ", cell);
+    return Math.floor(value).toLocaleString();
+  }
+
+  static formatCoins(cell, row) {
+    if (!cell) {
+      return cell;
+    }
+
+    return Math.floor(cell).toLocaleString();
+  }
+
+  static divByPower18(cell, row) {
+    if (!cell) {
+      return cell;
+    }
+
+    let value = cell / Math.pow(10, 18);
+    return Math.floor(value);
+  }
+
+
   static stakeFormatterRounded(cell, row) {
     if (!cell) {
       return cell;
@@ -74,6 +103,15 @@ class SPUtilities extends React.Component {
 
     // return SPUtilities.moneyFormatterPrecision(cell, 3);
     return numeral(cell).format('0.0a');
+  }
+
+  static stakeFormatterRoundedTwo(cell, row) {
+    if (!cell) {
+      return cell;
+    }
+
+    // return SPUtilities.moneyFormatterPrecision(cell, 3);
+    return numeral(cell).format('0.00a');
   }
 
   static stakeFormatterBySize(cell, row) {
@@ -351,9 +389,9 @@ class SPUtilities extends React.Component {
       poolId = thisObj.props.poolId;
     }
 
-    if (!poolId) {
-      poolId = config.apiGateway.DEFAULT_POOL_ID;
-    }
+    // if (!poolId) {
+    //   poolId = conf ig.apiGat eway.DEFAULT _POOL_ID;
+    // }
 
     return poolId;
   }
@@ -472,6 +510,16 @@ class SPUtilities extends React.Component {
 
   static getLastUpdatedGap(value) {
     let lastUpdated = value ? (value/60).toFixed(0) : "N/A";
+    return (<span>Last updated - <b>{lastUpdated}</b> minutes ago.<br/></span>);
+  }
+
+  static getLastUpdatedGapSpecial(value, specificValue) {
+    let input = value;
+    if (specificValue != undefined || specificValue != null) {
+      input = specificValue
+    }
+
+    let lastUpdated = input ? (input/60).toFixed(0) : "N/A";
     return (<span>Last updated - <b>{lastUpdated}</b> minutes ago.<br/></span>);
   }
 

@@ -283,7 +283,7 @@ class Rewards extends React.Component {
     // <h4 style={{align: "center"}}><span><strong>Rewards History</strong></span></h4>
     return (
       <div>
-        {AddressUtils.getBreadCrumb()}
+        {HUtils.getBreadCrumb()}
         <h4 style={{align: "center"}}><span><strong>Rewards Details</strong></span></h4>
         {this.addView()}
         <p/>

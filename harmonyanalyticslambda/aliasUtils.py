@@ -59,13 +59,13 @@ def createAddressAlias(conn, address, alias, app):
 def getAddressFromAlias(conn, app, alias):
     sql = " select address from " + tables.addressalias
     sql += " where app = %s and alias = %s "
-    logger.info(sql)
+    # logger.info(sql)
 
     args = (app, alias)
-    logger.info(args)
+    # logger.info(args)
 
     data = dbUtil.getSingleRecordNoJsonWithConn(sql, conn, args)
-    logger.info(data)
+    # logger.info(data)
 
     return data
 
